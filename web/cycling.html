@@ -127,6 +127,17 @@
 .hline .sep { opacity:.4; }
 .hline .dt { color:#111; padding:2px 8px; border-radius:8px; }
 
+  .compass { display:block; width:100%; flex:0 0 52%; max-width:190px; margin:0; }
+  .dirsec { margin-top:2px; text-align:center; } .dirhead { font-size:11.5px; font-weight:600; letter-spacing:.08em; text-transform:uppercase; color:var(--mut); }
+  .windline { font-size:13px; margin-top:2px; } .dirsec .why { font-size:12px; }
+  .compass text { text-anchor:middle; font-family:inherit; }
+  .dirrow { display:flex; align-items:center; justify-content:center; gap:10px; }
+  .dirtxt { flex:1 1 0; min-width:0; text-align:left; } .dirtxt .why { margin-top:3px; font-size:11.5px; line-height:1.3; }
+  .bigverdict { font-size:20px; font-weight:800; line-height:1.1; } .bigverdict span { display:inline; font-size:22px; margin-right:4px; }
+  .compass .wl { font-size:14px; fill:#9ad1ff; font-weight:600; }
+  .compass .dv { font-size:15px; font-weight:700; } .compass .dl { font-size:9px; fill:#cfd8e6; letter-spacing:.06em; }
+  .compass .cs1 { font-size:11px; fill:#e8eef8; font-weight:600; } .compass .cs2 { font-size:28px; font-weight:800; }
+  .compass .best circle { filter:drop-shadow(0 0 6px currentColor); }
   .sec { margin-top:14px; padding:13px 14px; border-radius:20px; background:rgba(255,255,255,.05); }
   .sec h2 { margin:0 0 8px; font-size:12px; font-weight:600; letter-spacing:.1em; text-transform:uppercase; color:var(--mut); }
   .outfit { font-size:17px; font-weight:650; }
@@ -535,6 +546,50 @@ async function main() {
     document.documentElement.style.setProperty("--bg1", bg1);
     document.documentElement.style.setProperty("--bg2", bg2);
 
+    // Riding direction: the ride score per heading, adjusted for head/tailwind from the measured wind direction
+    const DIRS = ["N", "NE", "E", "SE", "S", "SW", "W", "NW"];
+    const perMs = R.ride.headwindPointsPerMs ?? 2.5, maxAdj = R.ride.headwindMaxPoints ?? 15;
+    const dirScores = DIRS.map((name, k) => {
+      const hw = o.ff != null && o.dd != null ? o.ff * Math.cos((o.dd - k * 45) * Math.PI / 180) : 0;
+      const adj = Math.max(-maxAdj, Math.min(maxAdj, -hw * perMs));
+      const sc = Math.round(Math.max(0, Math.min(100, ride.total + adj)));
+      return { name, k, sc, v: verdictFor(R.scores.ride.verdicts, sc), hw };
+    });
+    const bestSc = Math.max(...dirScores.map(d => d.sc));
+    const windy = o.ff != null && o.dd != null && o.ff >= 1;
+    const bestDirs = windy ? dirScores.filter(d => d.sc === bestSc) : [];
+    const dirBlock = (() => {
+      const C = 130, RR = 96;
+      const pos = (deg, r) => [C + r * Math.sin(deg * Math.PI / 180), C - r * Math.cos(deg * Math.PI / 180)];
+      const nodes = dirScores.map(d => {
+        const [x, y] = pos(d.k * 45, RR), best = bestDirs.includes(d);
+        return `<g class="dn${best ? " best" : ""}"><title>Riding ${d.name}: ${d.sc}${windy ? ` (${d.hw > 0.5 ? "headwind" : d.hw < -0.5 ? "tailwind" : "crosswind"})` : ""}</title>
+          <circle cx="${x}" cy="${y}" r="${best ? 27 : 24}" fill="${d.v.color}" fill-opacity=".22" stroke="${d.v.color}" stroke-width="${best ? 3.5 : 2}"/>
+          <text x="${x}" y="${y - 2}" class="dv" fill="${d.v.color}">${d.sc}</text>
+          <text x="${x}" y="${y + 11}" class="dl">${d.name}</text></g>`;
+      }).join("");
+      let wind = "";
+      if (windy) {
+        const [x1, y1] = pos(o.dd, 134), [tx, ty] = pos(o.dd, 154);
+        wind = `<g transform="translate(${x1} ${y1}) rotate(${(o.dd + 180) % 360})"><title>Wind from ${compass(o.dd)}, ${bft(o.ff)} Bft</title>
+          <path d="M0,-8 L6,6 L0,2 L-6,6 Z" fill="#9ad1ff"/></g>
+          <text x="${tx}" y="${ty + 3}" class="wl">${bft(o.ff)} Bft</text>`;
+      }
+      return `<div class="dirsec"><div class="dirhead" style="margin-bottom:-4px">🧭 Ride score by riding direction</div>
+        <div class="dirrow"><svg viewBox="-34 -18 328 296" class="compass" role="img" aria-label="Ride score per riding direction">
+          <circle cx="${C}" cy="${C}" r="${RR}" fill="none" stroke="rgba(255,255,255,.12)" stroke-dasharray="3 5"/>
+          ${nodes}${wind}
+          <circle cx="${C}" cy="${C}" r="40" fill="rgba(16,23,38,.95)" stroke="${cV.color}" stroke-width="3"/>
+          <text x="${C}" y="${C - 8}" class="cs1">${esc(s.name.length > 14 ? s.name.slice(0, 13) + "…" : s.name)}</text>
+          <text x="${C}" y="${C + 16}" class="cs2" fill="${cV.color}">${score}</text></svg>
+        <div class="dirtxt"><div class="bigverdict" style="color:${cV.color}"><span>${cV.icon}</span>${esc(cV.label)}</div>
+        <div class="why">${windy
+          ? `Best to ride <b>${bestDirs.map(d => d.name).join(" / ")}</b> (tailwind), worst ${esc(dirScores.filter(d => d.sc === Math.min(...dirScores.map(x => x.sc))).map(d => d.name).join(" / "))}. ${bestSc === Math.min(...dirScores.map(x => x.sc)) ? "Wind is too light to matter." : ""}`
+          : "Little or no wind: every direction scores the same."}</div></div></div>
+
+</div>`;
+    })();
+
     inp.comfort = score;
     const quotes = (R.velominati ?? []).filter(q => test(q.when, inp));
     let quote = quotes.length ? quotes[Math.floor(Math.random() * quotes.length)] : null;
@@ -608,12 +663,7 @@ async function main() {
         ${sensorNote ? `<div class="warn">⚠️ ${sensorNote}</div>` : ""}
       </div>
 
-      <div class="scores">
-        <div class="score" style="--c:${cV.color};--cr:${rgbOf(cV.color)}"><h3>Ride score</h3>
-          <div class="ring" style="--p:${score}%"><div><span class="em">${cV.icon}</span><span class="n">${score}</span></div></div>
-          <div class="verdict">${esc(cV.label)}</div><div class="bar"><i style="width:${score}%"></i></div></div>
-      </div>
-
+      ${dirBlock}
       ${humBlock}
       <div class="chips">${pills}</div>
       ${quote ? `<div class="rule" style="margin:10px 0 0"><a href="https://www.velominati.com/the-rules/" target="_blank" rel="noopener">Velominati Rule #${quote.rule}</a>       · “${esc(quote.text)}”${fullRule ? ` <button type="button" class="rulemore noshare" id="rulemore">More</button>` : ""}</div>` : ""}
