@@ -134,7 +134,7 @@
   .dirrow { display:flex; align-items:center; justify-content:center; gap:10px; }
   .dirtxt { flex:1 1 0; min-width:0; text-align:left; } .dirtxt .why { margin-top:3px; font-size:11.5px; line-height:1.3; }
   .bigverdict { font-size:20px; font-weight:800; line-height:1.1; } .bigverdict span { display:inline; font-size:22px; margin-right:4px; }
-  .compass .wl { font-size:14px; fill:#9ad1ff; font-weight:600; }
+  .compass .wl { font-size:18px; fill:#9ad1ff; font-weight:600; }
   .compass .dv { font-size:15px; font-weight:700; } .compass .dl { font-size:9px; fill:#cfd8e6; letter-spacing:.06em; }
   .compass .cs1 { font-size:11px; fill:#e8eef8; font-weight:600; } .compass .cs2 { font-size:28px; font-weight:800; }
   .compass .best circle { filter:drop-shadow(0 0 6px currentColor); }
@@ -570,13 +570,13 @@ async function main() {
       }).join("");
       let wind = "";
       if (windy) {
-        const [x1, y1] = pos(o.dd, 134), [tx, ty] = pos(o.dd, 154);
+        const [x1, y1] = pos(o.dd, 134), [tx, ty] = pos(o.dd, 150 + 12 * Math.abs(Math.cos(o.dd * Math.PI / 180))), sn = Math.sin(o.dd * Math.PI / 180);
         wind = `<g transform="translate(${x1} ${y1}) rotate(${(o.dd + 180) % 360})"><title>Wind from ${compass(o.dd)}, ${bft(o.ff)} Bft</title>
           <path d="M0,-8 L6,6 L0,2 L-6,6 Z" fill="#9ad1ff"/></g>
-          <text x="${tx}" y="${ty + 3}" class="wl">${bft(o.ff)} Bft</text>`;
+          <text x="${tx}" y="${ty}" class="wl" dominant-baseline="central" style="text-anchor:${sn > 0.3 ? "start" : sn < -0.3 ? "end" : "middle"}">${bft(o.ff)} Bft</text>`;
       }
-      return `<div class="dirsec"><div class="dirhead" style="margin-bottom:-4px">🧭 Ride score by riding direction</div>
-        <div class="dirrow"><svg viewBox="-34 -18 328 296" class="compass" role="img" aria-label="Ride score per riding direction">
+      return `<div class="dirsec">
+        <div class="dirrow"><svg viewBox="-60 -40 380 340" class="compass" role="img" aria-label="Ride score per riding direction">
           <circle cx="${C}" cy="${C}" r="${RR}" fill="none" stroke="rgba(255,255,255,.12)" stroke-dasharray="3 5"/>
           ${nodes}${wind}
           <circle cx="${C}" cy="${C}" r="40" fill="rgba(16,23,38,.95)" stroke="${cV.color}" stroke-width="3"/>
