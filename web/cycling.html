@@ -558,14 +558,16 @@ async function main() {
     const bestSc = Math.max(...dirScores.map(d => d.sc));
     const windy = o.ff != null && o.dd != null && o.ff >= 1;
     const bestDirs = windy ? dirScores.filter(d => d.sc === bestSc) : [];
+    const worstSc = Math.min(...dirScores.map(d => d.sc));
+    const worstDirs = windy && worstSc < bestSc ? dirScores.filter(d => d.sc === worstSc) : [];
     const dirBlock = (() => {
       const C = 130, RR = 96;
       const pos = (deg, r) => [C + r * Math.sin(deg * Math.PI / 180), C - r * Math.cos(deg * Math.PI / 180)];
       const nodes = dirScores.map(d => {
-        const [x, y] = pos(d.k * 45, RR), best = bestDirs.includes(d);
+        const [x, y] = pos(d.k * 45, RR), best = bestDirs.includes(d), worst = worstDirs.includes(d), col = worst ? "#ff4d4d" : d.v.color;
         return `<g class="dn${best ? " best" : ""}"><title>Riding ${d.name}: ${d.sc}${windy ? ` (${d.hw > 0.5 ? "headwind" : d.hw < -0.5 ? "tailwind" : "crosswind"})` : ""}</title>
-          <circle cx="${x}" cy="${y}" r="${best ? 27 : 24}" fill="${d.v.color}" fill-opacity=".22" stroke="${d.v.color}" stroke-width="${best ? 3.5 : 2}"/>
-          <text x="${x}" y="${y - 2}" class="dv" fill="${d.v.color}">${d.sc}</text>
+          <circle cx="${x}" cy="${y}" r="${best ? 27 : 24}" fill="${col}" fill-opacity="${worst ? ".38" : ".22"}" stroke="${col}" stroke-width="${best ? 3.5 : 2}"/>
+          <text x="${x}" y="${y - 2}" class="dv" fill="${col}">${d.sc}</text>
           <text x="${x}" y="${y + 11}" class="dl">${d.name}</text></g>`;
       }).join("");
       let wind = "";
