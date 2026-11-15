@@ -504,7 +504,25 @@ async function main() {
       .map(x => data[k][x.j]).sort((a, b) => a - b);
     return v.length ? Math.max(data[k][i] ?? 0, v[Math.floor(v.length / 2)]) : data[k]?.[i] ?? null;
   };
-  const obs = i => ({ ...Object.fromEntries(VARS.map(k => [k, data[k]?.[i] ?? null])), R6H: areaRain(i, "R6H"), R24H: areaRain(i, "R24H") });
+  // Showers are patchy and the observations are hourly: also count rain reported within 25 km (rain intensity above 0.05 mm/h, or a rain/shower present-weather code)
+  const RAIN_WW = w => w != null && ((w >= 50 && w <= 69) || (w >= 80 && w <= 99));
+  const areaRainNow = i => {
+    const s = meta.stations[i];
+    let best = 0;
+    meta.stations.forEach((st, j) => {
+      if (km(s.lat, s.lon, st.lat, st.lon) > 25) return;
+      const v = Math.max(data.rg?.[j] ?? 0, data.pg?.[j] ?? 0);
+      if (v > 0.05) best = Math.max(best, v);
+      else if (RAIN_WW(data.ww?.[j])) best = Math.max(best, 0.1);
+    });
+    return best;
+  };
+  const obs = i => {
+    const o = { ...Object.fromEntries(VARS.map(k => [k, data[k]?.[i] ?? null])), R6H: areaRain(i, "R6H"), R24H: areaRain(i, "R24H") };
+    const a = areaRainNow(i);
+    if (a > Math.max(o.rg ?? 0, o.pg ?? 0)) o.rg = a;
+    return o;
+  };
 
   let idx = meta.stations.findIndex(s => s.name === FALLBACK), notice = "", distance = null, user = null;
   if (idx < 0) idx = Math.max(0, meta.stations.findIndex((_, i) => data.ta?.[i] != null));
