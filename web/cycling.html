@@ -634,9 +634,8 @@ async function main() {
       inp.feelsFormula != null && `🧊 <b>${fmt(inp.feelsFormula, 1)}°</b> <span>${inp.ta <= 10 ? "wind chill" : "heat index"}</span>`,
     ].filter(Boolean).map(p => `<span class="pill">${p}</span>`).join("");
     const humBlock = o.ta == null && o.rh == null && o.td == null ? "" : `<div class="hum">
-        <div class="chips" style="margin:0 0 8px">${tempPills}</div>
-        <div class="hline">${[o.rh != null && `💧 <b>${fmt(o.rh, 0)}%</b> RH`, o.td != null && `Td <b>${fmt(o.td, 1)}°C</b>`,
-          sp != null && `<span class="dt" style="background:${spBand[0]}">ΔT <b>${fmt(sp, 1)}°C</b></span>`].filter(Boolean).join('<span class="sep">|</span>')}</div>
+        <div class="chips" style="margin:0 0 8px">${tempPills}${[o.rh != null && `<span class="pill">💧 <b>${fmt(o.rh, 0)}%</b> RH</span>`, o.td != null && `<span class="pill">Td <b>${fmt(o.td, 1)}°C</b></span>`,
+          sp != null && `<span class="pill" style="background:${spBand[0]};color:#111">ΔT <b>${fmt(sp, 1)}°C</b></span>`].filter(Boolean).join("")}</div>
         ${spBand ? `<div class="why">Dew point depression (air − dew point): ${spBand[1]}</div>` : ""}
         ${fogRule ? `<div class="warn">${fogRule.icon ?? "🌫️"} ${esc(fogRule.text)}</div>` : ""}
         ${["clothing", "tips"].map(k => humList(k).map(x => `<div class="why">${{ clothing: "👕", tips: "💡" }[k]} ${esc(x)}</div>`).join("")).join("")}
