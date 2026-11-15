@@ -10,8 +10,8 @@
 
   "humidity": {
     "fog": [
-      { "when": { "input": "fogStrong", "op": "gte", "value": 1 }, "icon": "🌫️", "text": "Strong fog warning: RH ≥ 98% or dew point depression ≤ 1°C. Expect very poor visibility – use lights and slow down." },
-      { "when": { "input": "fogHigh", "op": "gte", "value": 1 }, "icon": "🌫️", "text": "High mist/fog risk: RH ≥ 95% and dew point depression ≤ 2°C." },
+      { "when": { "input": "fogStrong", "op": "gte", "value": 1 }, "icon": "🌫️", "text": "Strong fog warning: expect very poor visibility – use lights and slow down." },
+      { "when": { "input": "fogHigh", "op": "gte", "value": 1 }, "icon": "🌫️", "text": "High mist/fog risk." },
       { "when": [{ "input": "rh", "op": "gte", "value": 90 }, { "input": "vv", "op": "lt", "value": 3000 }], "icon": "🌁", "text": "Misty / reduced visibility: use lights and be extra visible." }
     ],
     "clothing": [
