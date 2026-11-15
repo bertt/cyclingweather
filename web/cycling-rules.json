@@ -17,11 +17,6 @@
     "clothing": [
       { "when": [{ "input": "ta", "op": "gte", "value": 22 }, { "input": "rh", "op": "gte", "value": 70 }], "text": "Warm and humid: wear light, highly breathable clothing and drink extra." }
     ],
-    "cleaning": [
-      { "when": [{ "input": "rh", "op": "gte", "value": 85 }, { "input": "rain6h", "op": "gt", "value": 0.5 }], "text": "Roads and bike will remain damp – rinse and lubricate the chain after riding." },
-      { "when": { "input": "rh", "op": "gte", "value": 95 }, "text": "High risk of corrosion – dry the bike thoroughly and apply lube." },
-      { "when": { "input": "dryNoRain", "op": "gte", "value": 1 }, "text": "Dry conditions – a light wipe and chain check is usually enough." }
-    ],
     "tips": [
       { "when": [{ "input": "rh", "op": "gte", "value": 85 }, { "input": "rain6h", "op": "gt", "value": 0.5 }], "text": "Roads will stay wet/slippery longer." },
       { "when": { "input": "rh", "op": "lte", "value": 40 }, "text": "Dry air – watch your hydration." }
@@ -65,7 +60,11 @@
             { "upTo": 2, "points": -37, "note": "Rain" },
             { "upTo": null, "points": -57, "note": "Heavy rain" }
           ] },
-        { "id": "wet-roads", "label": "Rain last hour (wet roads)", "input": "rain1h", "unit": "mm", "dec": 1,
+        { "id": "damp-rain", "label": "Humid after rain (RH ≥ 85% and > 0.5 mm in 6 h: bike and roads stay damp)", "input": "dampRain", "display": "flag",
+        "bands": [ { "upTo": 0, "points": 0 }, { "upTo": null, "points": 1, "note": "Stays damp" } ] },
+      { "id": "dry-air", "label": "Dry conditions (RH ≤ 50% and no recent rain)", "input": "dryNoRain", "display": "flag",
+        "bands": [ { "upTo": 0, "points": 0 }, { "upTo": null, "points": -1, "note": "Dry, light wipe is enough" } ] },
+      { "id": "wet-roads",  "label": "Rain last hour (wet roads)", "input": "rain1h", "unit": "mm", "dec": 1,
           "bands": [
             { "upTo": 0.1, "points": 0 },
             { "upTo": 1, "points": -10, "note": "Damp roads" },
@@ -339,7 +338,7 @@
         ] },
       {
         "id": "damp",
-        "label": "Very damp air (wet roads, mist)",
+        "label": "Very damp air (wet roads, mist, corrosion risk)",
         "input": "rh",
         "unit": "%",
         "bands": [
@@ -348,7 +347,11 @@
           { "upTo": null, "points": 2 }
         ]
       },
-      { "id": "wet-roads", "label": "Roads still wet (cool weather, shade does not dry)", "input": "wetRoads", "display": "flag",
+      { "id": "damp-rain", "label": "Humid after rain (RH ≥ 85% and > 0.5 mm in 6 h: bike and roads stay damp)", "input": "dampRain", "display": "flag",
+        "bands": [ { "upTo": 0, "points": 0 }, { "upTo": null, "points": 1, "note": "Stays damp" } ] },
+      { "id": "dry-air", "label": "Dry conditions (RH ≤ 50% and no recent rain)", "input": "dryNoRain", "display": "flag",
+        "bands": [ { "upTo": 0, "points": 0 }, { "upTo": null, "points": -1, "note": "Dry, light wipe is enough" } ] },
+      { "id": "wet-roads",  "label": "Roads still wet (cool weather, shade does not dry)", "input": "wetRoads", "display": "flag",
         "bands": [ { "upTo": 0, "points": 0 }, { "upTo": null, "points": 1, "note": "Wet road spray" } ] },
       { "id": "salt", "label": "Road salt likely (cold and wet)", "input": "saltRisk", "display": "flag",
         "bands": [
@@ -357,6 +360,9 @@
         ] }
     ],
     "tips": [
+      { "when": { "input": "dampRain", "op": "gte", "value": 1 }, "text": "Roads and bike will remain damp – rinse and lubricate the chain after riding." },
+      { "when": { "input": "rh", "op": "gte", "value": 95 }, "text": "High risk of corrosion – dry the bike thoroughly and apply lube." },
+      { "when": { "input": "dryNoRain", "op": "gte", "value": 1 }, "text": "Dry conditions – a light wipe and chain check is usually enough." },
       { "when": { "input": "saltRisk", "op": "gte", "value": 1 }, "text": "Road salt: also rinse the brake calipers, rims or discs, derailleurs and bottom bracket area." },
       { "when": { "input": "rain24h", "op": "gte", "value": 5 }, "text": "Several wet days: lube the chain more often, it washes out quickly." },
       { "when": [{ "input": "rain6h", "op": "gte", "value": 3 }, { "input": "ta", "op": "gte", "value": 5 }], "text": "Muddy roads: brush the cassette and derailleurs and clean the brake pads." }

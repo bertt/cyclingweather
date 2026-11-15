@@ -148,7 +148,7 @@ A third page that turns the same GeoParquet data (<https://bertt.github.io/knmi_
 - **Temperature and humidity**: all temperature data are shown together, without a separate header, (air temperature, feels-like on the bike, wind chill/heat index) with a humidity line such as `94% RH | Td 3.8°C | ΔT 1.9°C` (relative humidity, dew point, dew point depression = air temperature − dew point). ΔT is colour-coded: ≤ 2 °C red (very clammy / fog risk), 2–5 °C yellow (humid), 5–10 °C light green (moderate), > 10 °C green (relatively dry). Under it, rules from the `humidity` section of the rules file give:
   - **Fog/mist**: strong fog warning at RH ≥ 98% or ΔT ≤ 1 °C; high fog risk at RH ≥ 95% and ΔT ≤ 2 °C; "misty / reduced visibility" at RH ≥ 90% and visibility < 3000 m (the first match is shown).
   - **Clothing**: T ≥ 22 °C and RH ≥ 70% → light, breathable clothing and extra drinking.
-  - **Bike care**: RH ≥ 85% and > 0.5 mm rain in 6 h → rinse and lube the chain; RH ≥ 95% → corrosion risk, dry and lube; RH ≤ 50% and no recent rain → a light wipe is enough.
+  - **Bike care** (also part of the bike cleaning score, in the `cleaning` section): RH ≥ 85% and > 0.5 mm rain in 6 h → +1 point, rinse and lube the chain; RH ≥ 90% / ≥ 95% → +1 / +2 points (damp air), at ≥ 95% also a corrosion warning to dry and lube; RH ≤ 50% and no recent rain → −1 point, a light wipe is enough.
   - **Tips**: RH ≥ 85% after rain → roads stay slippery; RH ≤ 40% → watch hydration.
 - **Bike cleaning**: estimate from rain now, the last 1/6/24 hours and salt risk.
 

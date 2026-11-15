@@ -445,7 +445,7 @@ function derive(o, s, t, R) {
     darkSoon: sunElevation(new Date(t.getTime() + (r.darkSoonHours ?? 2) * 36e5), s.lat, s.lon) < -1 ? 1 : 0,
     fogStrong: o.rh != null && spread != null && (o.rh >= 98 || spread <= 1) ? 1 : 0,
     fogHigh: o.rh != null && spread != null && o.rh >= 95 && spread <= 2 ? 1 : 0,
-    wetAir: o.rh != null && spread != null && (o.rh >= 90 || spread <= 3) ? 1 : 0,
+    dampRain: o.rh != null && o.rh >= 85 && (o.R6H ?? 0) > 0.5 ? 1 : 0,
     dryNoRain: o.rh != null && o.rh <= 50 && !wetNow && (o.R6H ?? 0) <= 0.5 ? 1 : 0,
     _parts: parts,
   };
@@ -584,7 +584,7 @@ async function main() {
           sp != null && `<span class="dt" style="background:${spBand[0]}">ΔT <b>${fmt(sp, 1)}°C</b></span>`].filter(Boolean).join('<span class="sep">|</span>')}</div>
         ${spBand ? `<div class="why">Dew point depression (air − dew point): ${spBand[1]}</div>` : ""}
         ${fogRule ? `<div class="warn">${fogRule.icon ?? "🌫️"} ${esc(fogRule.text)}</div>` : ""}
-        ${["clothing", "cleaning", "tips"].map(k => humList(k).map(x => `<div class="why">${{ clothing: "👕", cleaning: "🔧", tips: "💡" }[k]} ${esc(x)}</div>`).join("")).join("")}
+        ${["clothing", "tips"].map(k => humList(k).map(x => `<div class="why">${{ clothing: "👕", tips: "💡" }[k]} ${esc(x)}</div>`).join("")).join("")}
       </div>`;
 
     const scale = (res, dirt) => res.rows.map(({ r, v, points }) => {
