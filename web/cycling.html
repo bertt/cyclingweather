@@ -118,9 +118,14 @@
   .ring .n { font-size:21px; font-weight:700; line-height:1.1; }
   .verdict { margin-top:9px; font-size:15px; font-weight:650; }
 
-  .chips { display:flex; flex-wrap:wrap; gap:6px; margin-top:14px; justify-content:center; }
+  .chips { display:flex; flex-wrap:wrap; gap:6px; margin-top:14px; justify-content:flex-start; }
   .pill { padding:4px 10px; border-radius:999px; background:rgba(0,0,0,.24); font-size:12.5px; white-space:nowrap; }
   .pill b { font-weight:650; }
+.hum { margin-top:14px; text-align:left; }
+.hum h2 { margin:0 0 8px; font-size:12px; font-weight:600; letter-spacing:.1em; text-transform:uppercase; color:var(--mut); }
+.hline { font-size:15px; display:flex; flex-wrap:wrap; gap:8px; align-items:center; }
+.hline .sep { opacity:.4; }
+.hline .dt { color:#111; padding:2px 8px; border-radius:8px; }
 
   .sec { margin-top:14px; padding:13px 14px; border-radius:20px; background:rgba(255,255,255,.05); }
   .sec h2 { margin:0 0 8px; font-size:12px; font-weight:600; letter-spacing:.1em; text-transform:uppercase; color:var(--mut); }
@@ -232,7 +237,8 @@
     <div class="isec"><h4>👋 About this site</h4>
       <p>This page finds the nearest KNMI weather station and turns its latest measurements into practical advice for cyclists: a ride score, what to wear, whether you need a rain jacket, and how to clean your bike afterwards. It also warns about ice, fog, darkness and thunder.</p>
       <p>It uses <b>18 weather parameters</b>: temperature, dew point, humidity, air pressure, wind speed, direction and gusts, sun radiation, visibility, cloud cover, sunshine duration, rain intensity, rain over the last 1, 6 and 24 hours, and the present-weather code.</p>
-      <p>Next to the temperature on the bike, the 🧊 pill shows a standard "feels like" temperature from air temperature and wind: the wind chill formula (T ≤ 10 °C, wind &gt; 4.8 km/h) <code>13.12 + 0.6215·T − 11.37·v<sup>0.16</sup> + 0.3965·T·v<sup>0.16</sup></code> (v = wind at 10 m in km/h), or the heat index (T ≥ 27 °C, with humidity). The 🪨 pill flags <a href="https://www.allesoverwielrennen.nl/dikke-wind/" target="_blank" rel="noopener">"dikke wind"</a>: cold, high-pressure air is denser and gives more air resistance. It is calculated from temperature, pressure and humidity relative to standard air (1.225 kg/m³) and shown at +3.5% (thick), +7% (very thick) or −3.5% (thin). The 🧊 pill is hidden when neither formula applies (e.g. calm wind, or 10–27 °C). It does not include riding speed, darkness or wind direction, so it differs from the temperature on the bike.</p>
+      <p>Next to the temperature on the bike, the 🧊 pill shows a standard "feels like" temperature from air temperature and wind: the wind chill formula (T ≤ 10 °C, wind &gt; 4.8 km/h) <code>13.12 + 0.6215·T − 11.37·v<sup>0.16</sup> + 0.3965·T·v<sup>0.16</sup></code> (v = wind at 10 m in km/h), or the heat index (T ≥ 27 °C, with humidity). The 🪨 pill flags <a href="https://www.allesoverwielrennen.nl/dikke-wind/" target="_blank" rel="noopener">"dikke wind"</a>: cold, high-pressure air is denser and gives more air resistance. It is calculated from temperature, pressure and humidity (via the dew point, as virtual temperature) relative to standard air (1.225 kg/m³) and shown at +3.5% (thick), +7% (very thick) or −3.5% (thin). The 🧊 pill is hidden when neither formula applies (e.g. calm wind, or 10–27 °C). It does not include riding speed, darkness or wind direction, so it differs from the temperature on the bike.</p>
+      <p>The temperature data are grouped together at the top, with relative humidity (RH), the dew point (Td) and the dew point depression ΔT = air temperature − dew point, e.g. <code>94% | Td 3.8°C | ΔT 1.9°C</code>. ΔT is colour-coded: ≤ 2 °C red (very clammy, fog risk), 2–5 °C yellow (humid), 5–10 °C light green (moderate), &gt; 10 °C green (relatively dry). Humidity also drives fog warnings (RH ≥ 98% or ΔT ≤ 1 °C strong; RH ≥ 95% and ΔT ≤ 2 °C high; RH ≥ 90% with visibility &lt; 3 km misty), clothing advice (warm and humid: light clothing and extra drinking), bike cleaning advice (RH ≥ 95%: corrosion risk; RH ≤ 50% and no recent rain: light wipe) and tips (fogging glasses, slippery roads, dry air).</p>
       <p>Cycling quotes come from <a href="https://www.velominati.com/the-rules/">The Rules</a> by Velominati.</p>
       <p><button type="button" id="calcbtn">🧮 How are the scores calculated?</button></p></div>
     <div class="isec"><h4>🧊 Data and GeoParquet</h4>
@@ -240,7 +246,7 @@
             <p>GeoParquet is an open, columnar format for geospatial data. The stations are sorted by location and stored in small row groups, so your browser can fetch just the pieces it needs (HTTP range requests) straight from static storage, with no server or API in between.</p>
             <p>GeoParquet source: <a id="zsrc" href="#"></a><br>
               The station id, name, height and location are stored in the same file.</p></div>
-    <div class="isec"><h4>🧮 Advice</h4>
+<div class="isec"><h4>🧮 Advice</h4>
       <p>Indicative advice based on the rules in <a id="rulesurl" href="#"></a>. Add <code>?rules=URL</code> to try your own.</p></div>
     <div class="isec"><h4>🔒 Privacy</h4>
       <p>Your location stays in your browser.</p></div>
@@ -353,11 +359,12 @@ function pressureLabel(pp) {
   return "very high";
 }
 // Air density (kg/m³) from the ideal gas law, with vapour pressure correction; 1.225 is the standard (15 °C, 1013 hPa).
-function airDensity(ta, pp, rh) {
+function airDensity(ta, pp, rh, td) {
   if (ta == null || pp == null) return null;
-  const es = 6.1078 * Math.pow(10, 7.5 * ta / (ta + 237.3));
-  const e = rh == null ? 0 : es * rh / 100;
-  return ((pp - e) * 100) / (287.05 * (ta + 273.15)) + (e * 100) / (461.5 * (ta + 273.15));
+  const sat = x => 6.1078 * Math.pow(10, 7.5 * x / (x + 237.3));
+  const e = td != null ? sat(td) : rh != null ? sat(ta) * rh / 100 : 0;
+  const tv = (ta + 273.15) / (1 - (e / pp) * (1 - 0.622)); // virtual temperature (K)
+  return (pp * 100) / (287.05 * tv);
 }
 function windThickness(rho) {
   if (rho == null) return null;
@@ -415,7 +422,7 @@ function derive(o, s, t, R) {
     moon.illumination >= (r.moonMinIlluminationPct ?? 50) && moon.altitude >= (r.moonMinAltitudeDeg ?? 5) ? 1 : 0;
   return {
     ta: o.ta, td: o.td, rh: o.rh, ff: o.ff, gust: maxOf(o.gff, o.fx), qg: o.qg, vv: o.vv, n: o.n, ss: o.ss, pp: o.pp,
-    rainIntensity, rain1h: o.R1H, rain6h: o.R6H, rain24h: o.R24H,     rideTemp, feelsFormula: feelsLike(o.ta, o.ff, o.rh),
+    spread, rainIntensity, rain1h: o.R1H, rain6h: o.R6H, rain24h: o.R24H,     rideTemp, feelsFormula: feelsLike(o.ta, o.ff, o.rh),
     iceRisk: o.ta != null && o.ta <= r.iceTempC && (wetNow || (o.rh != null && o.rh >= r.iceHumidityPct)) ? 1 : 0,
     saltRisk: o.ta != null && o.ta <= r.saltTempC && (wetNow || (o.R6H ?? 0) > 0.5) ? 1 : 0,
     wetRoads: o.ta != null && o.ta <= 14 && ((o.R24H ?? 0) >= 0.2 || (o.R6H ?? 0) >= 0.1) && (o.qg ?? 0) < 500 ? 1 : 0,
@@ -436,6 +443,10 @@ function derive(o, s, t, R) {
     intervalWeather: o.ff != null && o.ta != null && o.ff <= 3 && o.ta >= 8 && o.ta <= 18 && (o.R1H ?? 0) < 0.1 && !raining ? 1 : 0,
     wetDrive: raining || (o.R1H ?? 0) > 0.1 || (o.R6H ?? 0) > 0.5 ? 1 : 0,
     darkSoon: sunElevation(new Date(t.getTime() + (r.darkSoonHours ?? 2) * 36e5), s.lat, s.lon) < -1 ? 1 : 0,
+    fogStrong: o.rh != null && spread != null && (o.rh >= 98 || spread <= 1) ? 1 : 0,
+    fogHigh: o.rh != null && spread != null && o.rh >= 95 && spread <= 2 ? 1 : 0,
+    wetAir: o.rh != null && spread != null && (o.rh >= 90 || spread <= 3) ? 1 : 0,
+    dryNoRain: o.rh != null && o.rh <= 50 && !wetNow && (o.R6H ?? 0) <= 0.5 ? 1 : 0,
     _parts: parts,
   };
 }
@@ -548,18 +559,33 @@ async function main() {
 
     const feels = inp.rideTemp == null ? null : inp.rideTemp;
     const pills = [
-      o.ta != null && `🌡️ <b>${fmt(o.ta, 1)}°</b> <span>feels ${fmt(feels, 1)}° on the bike</span>`,
-           inp.feelsFormula != null && `🧊 <b>${fmt(inp.feelsFormula, 1)}°</b> <span>${inp.ta <= 10 ? "wind chill" : "heat index"}</span>`,
-           o.td != null && `💧 dew point <b>${fmt(o.td, 1)}°</b>`,
       inp.rainIntensity != null && `🌧️ <b>${fmt(inp.rainIntensity, 1)}</b> mm/h`,
       o.R1H != null && `☔ <b>${fmt(o.R1H, 1)}</b> mm last hour`,
       o.ff != null && `💨 <b>${bft(o.ff)}</b> Bft${o.dd != null ? ` from <b>${compass(o.dd)}</b>` : ""}`,
       inp.gust != null && `🌬️ gusts <b>${bft(inp.gust)}</b> Bft`,
       o.qg != null && `☀️ <b>${sunWord(o.qg)}</b> <span>${fmt(o.qg)} W/m²</span>`,
-      (th => th && `🪨 <b>${th.label}</b> <span>${th.pct > 0 ? "+" : ""}${fmt(th.pct, 0)}% air resistance</span>`)(windThickness(airDensity(o.ta, o.pp, o.rh))),
+      (th => th && `🪨 <b>${th.label}</b> <span>${th.pct > 0 ? "+" : ""}${fmt(th.pct, 0)}% air resistance</span>`)(windThickness(airDensity(o.ta, o.pp, o.rh, o.td))),
       o.pp != null && `🧭 <b>${fmt(o.pp)}</b> hPa <span>${pressureLabel(o.pp)}</span>`,
       o.vv != null && `👁️ <b>${fmt(o.vv / 1000, 1)}</b> km`,
     ].filter(Boolean).map(p => `<span class="pill">${p}</span>`).join("");
+
+    const hum = R.humidity ?? {};
+    const fogRule = (hum.fog ?? []).find(x => test(x.when, inp));
+    const humList = k => (hum[k] ?? []).filter(x => test(x.when, inp)).map(x => x.text);
+    const sp = inp.spread;
+    const spBand = sp == null ? null : sp <= 2 ? ["#ef5350", "very clammy / fog risk"] : sp <= 5 ? ["#fdd835", "humid"] : sp <= 10 ? ["#aed581", "moderate"] : ["#43a047", "relatively dry"];
+    const tempPills = [
+      o.ta != null && `🌡️ <b>${fmt(o.ta, 1)}°</b> <span>feels ${fmt(feels, 1)}° on the bike</span>`,
+      inp.feelsFormula != null && `🧊 <b>${fmt(inp.feelsFormula, 1)}°</b> <span>${inp.ta <= 10 ? "wind chill" : "heat index"}</span>`,
+    ].filter(Boolean).map(p => `<span class="pill">${p}</span>`).join("");
+    const humBlock = o.ta == null && o.rh == null && o.td == null ? "" : `<div class="hum">
+        <div class="chips" style="margin:0 0 8px">${tempPills}</div>
+        <div class="hline">${[o.rh != null && `💧 <b>${fmt(o.rh, 0)}%</b> RH`, o.td != null && `Td <b>${fmt(o.td, 1)}°C</b>`,
+          sp != null && `<span class="dt" style="background:${spBand[0]}">ΔT <b>${fmt(sp, 1)}°C</b></span>`].filter(Boolean).join('<span class="sep">|</span>')}</div>
+        ${spBand ? `<div class="why">Dew point depression (air − dew point): ${spBand[1]}</div>` : ""}
+        ${fogRule ? `<div class="warn">${fogRule.icon ?? "🌫️"} ${esc(fogRule.text)}</div>` : ""}
+        ${["clothing", "cleaning", "tips"].map(k => humList(k).map(x => `<div class="why">${{ clothing: "👕", cleaning: "🔧", tips: "💡" }[k]} ${esc(x)}</div>`).join("")).join("")}
+      </div>`;
 
     const scale = (res, dirt) => res.rows.map(({ r, v, points }) => {
       const u = r.unit ? ` ${r.unit}` : "";
@@ -588,6 +614,7 @@ async function main() {
           <div class="verdict">${esc(cV.label)}</div><div class="bar"><i style="width:${score}%"></i></div></div>
       </div>
 
+      ${humBlock}
       <div class="chips">${pills}</div>
       ${quote ? `<div class="rule" style="margin:10px 0 0"><a href="https://www.velominati.com/the-rules/" target="_blank" rel="noopener">Velominati Rule #${quote.rule}</a>       · “${esc(quote.text)}”${fullRule ? ` <button type="button" class="rulemore noshare" id="rulemore">More</button>` : ""}</div>` : ""}
            ${quote && fullRule ? `<dialog id="rulefull" class="noshare">

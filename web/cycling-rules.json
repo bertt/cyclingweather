@@ -8,6 +8,28 @@
     "Scores: result = clamp(base + sum of band points, 0, 100). Cleaning: base + sum of points, then the highest level with min <= total."
   ],
 
+  "humidity": {
+    "fog": [
+      { "when": { "input": "fogStrong", "op": "gte", "value": 1 }, "icon": "🌫️", "text": "Strong fog warning: RH ≥ 98% or dew point depression ≤ 1°C. Expect very poor visibility – use lights and slow down." },
+      { "when": { "input": "fogHigh", "op": "gte", "value": 1 }, "icon": "🌫️", "text": "High mist/fog risk: RH ≥ 95% and dew point depression ≤ 2°C." },
+      { "when": [{ "input": "rh", "op": "gte", "value": 90 }, { "input": "vv", "op": "lt", "value": 3000 }], "icon": "🌁", "text": "Misty / reduced visibility: use lights and be extra visible." }
+    ],
+    "clothing": [
+      { "when": [{ "input": "ta", "op": "gte", "value": 22 }, { "input": "rh", "op": "gte", "value": 70 }], "text": "Warm and humid: wear light, highly breathable clothing and drink extra." },
+      { "when": { "input": "rh", "op": "gte", "value": 90 }, "text": "Clothing will stay damp longer in this humid air." }
+    ],
+    "cleaning": [
+      { "when": [{ "input": "rh", "op": "gte", "value": 85 }, { "input": "rain6h", "op": "gt", "value": 0.5 }], "text": "Roads and bike will remain damp – rinse and lubricate the chain after riding." },
+      { "when": { "input": "rh", "op": "gte", "value": 95 }, "text": "High risk of corrosion – dry the bike thoroughly and apply lube." },
+      { "when": { "input": "dryNoRain", "op": "gte", "value": 1 }, "text": "Dry conditions – a light wipe and chain check is usually enough." }
+    ],
+    "tips": [
+      { "when": [{ "input": "rh", "op": "gte", "value": 90 }, { "input": "ta", "op": "lte", "value": 10 }], "text": "Glasses may fog up quickly and gloves will get wet faster." },
+      { "when": [{ "input": "rh", "op": "gte", "value": 85 }, { "input": "rain6h", "op": "gt", "value": 0.5 }], "text": "Roads will stay wet/slippery longer." },
+      { "when": { "input": "rh", "op": "lte", "value": 40 }, "text": "Dry air – watch your hydration." }
+    ]
+  },
+
   "ride": {
     "bikeOffsetC": -2,
     "rainOffsetC": -1.5,
