@@ -136,7 +136,7 @@
   .bigverdict { font-size:20px; font-weight:800; line-height:1.1; } .bigverdict span { display:inline; font-size:22px; margin-right:4px; }
   .compass .wl { font-size:18px; fill:#9ad1ff; font-weight:600; }
   .compass .dv { font-size:15px; font-weight:700; } .compass .dl { font-size:9px; fill:#cfd8e6; letter-spacing:.06em; }
-  .compass .cs1 { font-size:11px; fill:#e8eef8; font-weight:600; } .compass .cs2 { font-size:28px; font-weight:800; }
+  .compass .cs1 { font-size:13px; fill:#e8eef8; font-weight:600; } .compass .cs2 { font-size:32px; font-weight:800; }
   .compass .best circle { filter:drop-shadow(0 0 6px currentColor); }
   .sec { margin-top:14px; padding:13px 14px; border-radius:20px; background:rgba(255,255,255,.05); }
   .sec h2 { margin:0 0 8px; font-size:12px; font-weight:600; letter-spacing:.1em; text-transform:uppercase; color:var(--mut); }
@@ -581,9 +581,9 @@ async function main() {
         <div class="dirrow"><svg viewBox="-60 -40 380 340" class="compass" role="img" aria-label="Ride score per riding direction">
           <circle cx="${C}" cy="${C}" r="${RR}" fill="none" stroke="rgba(255,255,255,.12)" stroke-dasharray="3 5"/>
           ${nodes}${wind}
-          <circle cx="${C}" cy="${C}" r="40" fill="rgba(16,23,38,.95)" stroke="${cV.color}" stroke-width="3"/>
-          <text x="${C}" y="${C - 8}" class="cs1">${esc(s.name.length > 14 ? s.name.slice(0, 13) + "…" : s.name)}</text>
-          <text x="${C}" y="${C + 16}" class="cs2" fill="${cV.color}">${score}</text></svg>
+          <circle cx="${C}" cy="${C}" r="50" fill="rgba(16,23,38,.95)" stroke="${cV.color}" stroke-width="3"/>
+          <text x="${C}" y="${C - 10}" class="cs1">${esc(s.name.length > 13 ? s.name.slice(0, 12) + "…" : s.name)}</text>
+          <text x="${C}" y="${C + 20}" class="cs2" fill="${cV.color}">${score}</text></svg>
         <div class="dirtxt"><div class="bigverdict" style="color:${cV.color}"><span>${cV.icon}</span>${esc(cV.label)}</div>
         <div class="why">${windy
           ? `Best to ride <b>${bestDirs.map(d => d.name).join(" / ")}</b> (tailwind), worst ${esc(dirScores.filter(d => d.sc === Math.min(...dirScores.map(x => x.sc))).map(d => d.name).join(" / "))}. ${bestSc === Math.min(...dirScores.map(x => x.sc)) ? "Wind is too light to matter." : ""}`
