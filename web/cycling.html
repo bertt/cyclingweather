@@ -555,25 +555,26 @@ async function main() {
       .filter(x => x.j !== idx && data.ta?.[x.j] != null && Math.abs(((x.b - k * 45 + 540) % 360) - 180) <= 22.5 && x.d <= DIR_MAX_KM)
       .sort((p, q) => p.d - q.d)[0];
     const DIRS = ["N", "NE", "E", "SE", "S", "SW", "W", "NW"];
-    const perMs = R.ride.headwindPointsPerMs ?? 2.5, maxAdj = R.ride.headwindMaxPoints ?? 15;
+    const stationScore = j => {
+      const r = evalRules(R.scores.ride.rules, derive(obs(j), meta.stations[j], new Date(), R), R.scores.ride.base);
+      return Math.round(Math.max(0, Math.min(100, r.total)));
+    };
     const dirScores = DIRS.map((name, k) => {
-      const hw = o.ff != null && o.dd != null ? o.ff * Math.cos((o.dd - k * 45) * Math.PI / 180) : 0;
-      const adj = Math.max(-maxAdj, Math.min(maxAdj, -hw * perMs));
-      const sc = Math.round(Math.max(0, Math.min(100, ride.total + adj)));
-      return { name, k, sc, v:       verdictFor(R.scores.ride.verdicts, sc), hw, ns: dirStation(k) };
-          }).filter(d => d.ns);
+      const ns = dirStation(k), sc = ns ? stationScore(ns.j) : 0;
+      return { name, k, sc, v: verdictFor(R.scores.ride.verdicts, sc), ns };
+    }).filter(d => d.ns);
     const bestSc = Math.max(...dirScores.map(d => d.sc));
     const windy = o.ff != null && o.dd != null && o.ff >= 1 && dirScores.length > 0;
     const bestDirs = windy ? dirScores.filter(d => d.sc === bestSc) : [];
     const worstSc = Math.min(...dirScores.map(d => d.sc));
-    const worstDirs = windy && worstSc < bestSc ? dirScores.filter(d => d.sc === worstSc) : [];
+    const worstDirs = worstSc < bestSc ? dirScores.filter(d => d.sc === worstSc) : [];
     const dirBlock = (() => {
       const C = 130, RR = 96;
       const pos = (deg, r) => [C + r * Math.sin(deg * Math.PI / 180), C - r * Math.cos(deg * Math.PI / 180)];
       const nodes = dirScores.map(d => {
         const [x, y] = pos(d.k * 45, RR), best = bestDirs.includes(d), worst = worstDirs.includes(d), col = worst ? "#ff4d4d" : d.v.color;
         const ns = d.ns, nsn = meta.stations[ns.j].name;
-        return `<${ns ? `a href="?station=${encodeURIComponent(nsn)}" data-i="${ns.j}"` : "g"} class="dn${best ? " best" : ""}${ns ? " godir" : ""}"><title>Riding ${d.name}: ${d.sc}${windy ? ` (${d.hw > 0.5 ? "headwind" : d.hw < -0.5 ? "tailwind" : "crosswind"})` : ""}${ns ? ` · go to ${nsn} (${fmt(ns.d, 0)} km)` : ""}</title>
+        return `<${ns ? `a href="?station=${encodeURIComponent(nsn)}" data-i="${ns.j}"` : "g"} class="dn${best ? " best" : ""}${ns ? " godir" : ""}"><title>${d.name}: ${nsn} (${fmt(ns.d, 0)} km) · score ${d.sc}</title>
           <circle cx="${x}" cy="${y}" r="${best ? 27 : 24}" fill="${col}" fill-opacity="${worst ? ".38" : ".22"}" stroke="${col}" stroke-width="${best ? 3.5 : 2}"/>
           <text x="${x}" y="${y - 2}" class="dv" fill="${col}">${d.sc}</text>
           <text x="${x}" y="${y + 11}" class="dl">${d.name}</text></${ns ? "a" : "g"}>`;
@@ -593,9 +594,7 @@ async function main() {
           <text x="${C}" y="${C - 10}" class="cs1">${esc(s.name.length > 13 ? s.name.slice(0, 12) + "…" : s.name)}</text>
           <text x="${C}" y="${C + 20}" class="cs2" fill="${cV.color}">${score}</text></svg>
         <div class="dirtxt"><div class="bigverdict" style="color:${cV.color}"><span>${cV.icon}</span>${esc(cV.label)}</div>
-        <div class="why">${windy
-          ? `Best to ride <b>${bestDirs.map(d => d.name).join(" / ")}</b> (tailwind), worst ${esc(dirScores.filter(d => d.sc === Math.min(...dirScores.map(x => x.sc))).map(d => d.name).join(" / "))}. ${bestSc === Math.min(...dirScores.map(x => x.sc)) ? "Wind is too light to matter." : ""}`
-          : "Little or no wind: every direction scores the same."}</div></div></div>
+        <div class="why">${!dirScores.length ? "No neighbouring station nearby." : worstSc === bestSc ? "Same ride score in every direction." : `Best weather towards <b>${bestDirs.map(d => d.name).join(" / ")}</b>, worst ${worstDirs.map(d => d.name).join(" / ")}.`}</div></div></div>
 
 </div>`;
     })();
