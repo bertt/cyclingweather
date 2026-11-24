@@ -38,6 +38,9 @@ jobs:
       - id: deployment
         uses: actions/deploy-pages@v4
         continue-on-error: true
+      - name: Wait before retrying deployment
+        if: steps.deployment.outcome == 'failure'
+        run: sleep 30
       - id: deployment_retry
         if: steps.deployment.outcome == 'failure'
         uses: actions/deploy-pages@v4
