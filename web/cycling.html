@@ -435,7 +435,7 @@ function derive(o, s, t, R) {
     moon.illumination >= (r.moonMinIlluminationPct ?? 50) && moon.altitude >= (r.moonMinAltitudeDeg ?? 5) ? 1 : 0;
   // Full moon and clear sky: shown from a few hours before the moon rises
   const moonSoon = moonInfo(new Date(t.getTime() + 3 * 36e5), s.lat, s.lon);
-  const fullMoon = o.n != null && o.n <= (r.moonMaxCloudOctas ?? 2) && moon.illumination >= 95 &&
+  const fullMoon = (o.n == null || o.n <= (r.moonMaxCloudOctas ?? 2)) && moon.illumination >= 95 &&
     (moon.altitude >= 0 || moonSoon.altitude >= 0) ? 1 : 0;
   return {
     fullMoon,
