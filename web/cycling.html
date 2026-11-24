@@ -131,6 +131,7 @@
   .dirsec { margin-top:2px; text-align:center; } .dirhead { font-size:11.5px; font-weight:600; letter-spacing:.08em; text-transform:uppercase; color:var(--mut); }
   .windline { font-size:13px; margin-top:2px; } .dirsec .why { font-size:12px; }
   .compass text { text-anchor:middle; font-family:inherit; }
+  .fullmoon { font-size:34px; line-height:1; filter:drop-shadow(0 0 8px rgba(255,240,170,.7)); }
   .dirrow { display:flex; align-items:center; justify-content:center; gap:10px; }
   .dirtxt { flex:1 1 0; min-width:0; text-align:left; } .dirtxt .why { margin-top:3px; font-size:11.5px; line-height:1.3; }
   .bigverdict { font-size:20px; font-weight:800; line-height:1.1; } .bigverdict span { display:inline; font-size:22px; margin-right:4px; }
@@ -432,7 +433,12 @@ function derive(o, s, t, R) {
   const elev = sunElevation(t, s.lat, s.lon);
   const moonlight = darkness >= 50 && o.n != null && o.n <= (r.moonMaxCloudOctas ?? 2) &&
     moon.illumination >= (r.moonMinIlluminationPct ?? 50) && moon.altitude >= (r.moonMinAltitudeDeg ?? 5) ? 1 : 0;
+  // Full moon and clear sky: shown from a few hours before the moon rises
+  const moonSoon = moonInfo(new Date(t.getTime() + 3 * 36e5), s.lat, s.lon);
+  const fullMoon = o.n != null && o.n <= (r.moonMaxCloudOctas ?? 2) && moon.illumination >= 95 &&
+    (moon.altitude >= 0 || moonSoon.altitude >= 0) ? 1 : 0;
   return {
+    fullMoon,
     ta: o.ta, td: o.td, rh: o.rh, ff: o.ff, gust: maxOf(o.gff, o.fx), qg: o.qg, vv: o.vv, n: o.n, ss: o.ss, pp: o.pp,
     spread, rainIntensity, rain1h: o.R1H, rain6h: o.R6H, rain24h: o.R24H,     rideTemp, feelsFormula: feelsLike(o.ta, o.ff, o.rh),
     iceRisk: o.ta != null && o.ta <= r.iceTempC && (wetNow || (o.rh != null && o.rh >= r.iceHumidityPct)) ? 1 : 0,
@@ -611,6 +617,7 @@ async function main() {
           <circle cx="${C}" cy="${C}" r="50" fill="rgba(16,23,38,.95)" stroke="${cV.color}" stroke-width="3"/>
           <text x="${C}" y="${C - 10}" class="cs1">${esc(s.name.length > 13 ? s.name.slice(0, 12) + "…" : s.name)}</text>
           <text x="${C}" y="${C + 20}" class="cs2" fill="${cV.color}">${score}</text></svg>
+        ${inp.fullMoon ? `<div class="fullmoon" title="Full moon and clear sky tonight">🌕</div>` : ""}
         <div class="dirtxt"><div class="bigverdict" style="color:${cV.color}"><span>${cV.icon}</span>${esc(cV.label)}</div>
         <div class="why">${!dirScores.length ? "No neighbouring station nearby." : worstSc === bestSc ? "Same ride score in every direction." : `Best weather towards <b>${bestDirs.map(d => d.name).join(" / ")}</b>, worst ${worstDirs.map(d => d.name).join(" / ")}.`}</div></div></div>
 

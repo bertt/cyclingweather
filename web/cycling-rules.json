@@ -258,8 +258,8 @@
 
   "clothing": {
     "bands": [
-      { "upTo": 0, "label": "Freezing",
-        "items": ["Helmet", "Windproof jacket", "Thermal base layer", "Long thermal bib tights", "Winter gloves", "Skullcap", "Overshoes", "Neck warmer"] },
+      { "upTo": 2, "label": "Freezing",
+        "items": ["Helmet", "Windproof jacket", "Cycling jersey", "Long sleeve base layer", "Long thermal bib tights", "Winter gloves", "Skullcap", "Cycling Freeze overshoes", "Neck warmer"] },
       { "upTo": 5, "label": "Very cold",
         "items": ["Helmet", "Thermal jersey", "Windproof jacket", "Base layer", "Long bib tights", "Gloves", "Skullcap", "Overshoes", "Neck warmer"] },
       { "upTo": 10, "label": "Cold",
