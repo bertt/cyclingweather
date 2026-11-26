@@ -306,7 +306,7 @@ const bft = v => [0.3,1.6,3.4,5.5,8,10.8,13.9,17.2,20.8,24.5,28.5,32.7].filter(t
 const sunWord = q => q < 10 ? "dark / no sun" : q < 100 ? "overcast" : q < 250 ? "cloudy" : q < 500 ? "partly sunny" : q < 800 ? "sunny" : "very sunny";
 const sg = v => `${v < 0 ? "−" : "+"}${Math.abs(v)}°`;
 const INPUT_NAMES = { pp: "air pressure (hPa)", comfort: "ride comfort score", rainIntensity: "rain now (mm/h)", rain1h: "rain last hour (mm)", rain6h: "rain last 6 h (mm)", rain24h: "rain last 24 h (mm)",
-  rideTemp: "temperature on the bike (°C)", ta: "air temperature (°C)", qg: "sun (W/m²)", vv: "visibility (m)", night: "dark", darkness: "darkness (%)", moonlight: "bright moon and clear sky", dull: "overcast and windless", coldEastWind: "cold easterly wind", sunGlare: "low sun glare", redSky: "chance of a red sky", leafRisk: "wet autumn leaves", foggyCold: "fog and cold", bridgeIce: "ice on bridges", dryCold: "dry cold air", intervalWeather: "calm and dry", wetDrive: "wet drivetrain", wetRoads: "roads still wet (slow drying, shade)", moonIllumination: "moon illuminated (%)", darkSoon: "dark within 2 hours", iceRisk: "ice risk", saltRisk: "salt risk", hail: "hail", snow: "snow", thunder: "thunderstorm", ff: "wind (m/s)", gust: "gusts (m/s)", rh: "humidity (%)" };
+  rideTemp: "temperature on the bike (°C)", ta: "air temperature (°C)", qg: "sun (W/m²)", vv: "visibility (m)", night: "dark", darkness: "darkness (%)", moonlight: "bright moon and clear sky", dull: "overcast and windless", coldEastWind: "cold easterly wind", sunGlare: "low sun glare", redSky: "chance of a red sky", mistLight: "mist in low sun", rime: "chance of rime", rainbow: "chance of a rainbow", goldenHour: "golden hour", blueHour: "blue hour", crepuscular: "crepuscular rays", stormLight: "storm light", snowSun: "snow in sunlight", starryNight: "starry night", fullMoon: "full moon", leafRisk: "wet autumn leaves", foggyCold: "fog and cold", bridgeIce: "ice on bridges", dryCold: "dry cold air", intervalWeather: "calm and dry", wetDrive: "wet drivetrain", wetRoads: "roads still wet (slow drying, shade)", moonIllumination: "moon illuminated (%)", darkSoon: "dark within 2 hours", iceRisk: "ice risk", saltRisk: "salt risk", hail: "hail", snow: "snow", thunder: "thunderstorm", ff: "wind (m/s)", gust: "gusts (m/s)", rh: "humidity (%)" };
 const OP_TEXT = { gt: ">", gte: "≥", lt: "<", lte: "≤", eq: "=" };
 const condText = c => ["night", "darkSoon", "iceRisk", "snow", "saltRisk", "coldEastWind", "sunGlare", "leafRisk", "foggyCold", "bridgeIce", "dryCold", "intervalWeather", "wetDrive"].includes(c.input) && c.op === "gte" && c.value === 1
   ? INPUT_NAMES[c.input] : `${INPUT_NAMES[c.input] ?? c.input} ${OP_TEXT[c.op] ?? c.op} ${c.value}`;
@@ -442,6 +442,8 @@ function derive(o, s, t, R) {
   }
   const wetNow = (o.R1H ?? 0) > 0.1 || raining;
   const moon = moonInfo(t, s.lat, s.lon);
+  const thunderNow = [17, 29, 91, 92, 93, 94, 95, 96, 97, 98, 99].includes(o.ww);
+  const snowNow = [22, 36, 37, 38, 39, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 83, 84, 85, 86].includes(o.ww) && o.ta != null && o.ta <= 2;
   const elev = sunElevation(t, s.lat, s.lon);
   const moonlight = darkness >= 50 && o.n != null && o.n <= (r.moonMaxCloudOctas ?? 2) &&
     moon.illumination >= (r.moonMinIlluminationPct ?? 50) && moon.altitude >= (r.moonMinAltitudeDeg ?? 5) ? 1 : 0;
@@ -467,6 +469,15 @@ function derive(o, s, t, R) {
     coldEastWind: o.dd != null && o.ff != null && o.ta != null && o.dd >= 30 && o.dd <= 150 && o.ff >= 4 && o.ta < 10 ? 1 : 0,
     sunGlare: o.n != null && o.n <= 5 && elev > 0 && elev < (r.glareMaxElevationDeg ?? 12) ? 1 : 0,
     redSky: o.n != null && o.n >= 1 && o.n <= 6 && !raining && elev > -4 && elev < 12 ? 1 : 0,
+    mistLight: o.ff != null && spread != null && o.ff <= 2 && spread <= 2 && !raining && elev > 0 && elev < 15 ? 1 : 0,
+    rime: o.ta != null && o.rh != null && o.ff != null && o.ta <= 0 && o.ta >= -8 && o.rh >= 90 && o.ff <= 3 && elev > -6 && elev < 15 ? 1 : 0,
+    rainbow: o.n != null && o.n <= 6 && elev > 2 && elev < 42 && ((o.ww >= 80 && o.ww <= 86) || (raining && !thunderNow)) ? 1 : 0,
+    goldenHour: o.n != null && o.n <= 2 && elev > 0 && elev < 6 ? 1 : 0,
+    blueHour: o.n != null && o.n <= 2 && elev <= -4 && elev >= -8 ? 1 : 0,
+    crepuscular: o.n != null && o.n >= 4 && o.n <= 6 && !raining && elev > 0 && elev < 10 ? 1 : 0,
+    stormLight: thunderNow && elev > 0 && elev < 15 ? 1 : 0,
+    snowSun: snowNow && o.n != null && o.n <= 5 && elev > 5 ? 1 : 0,
+    starryNight: o.n != null && o.n <= 1 && moon.illumination <= 10 && elev < -18 && (o.rh == null || o.rh <= 85) ? 1 : 0,
     leafRisk: t.getMonth() >= 8 && t.getMonth() <= 10 && (o.R24H ?? 0) >= 2 && o.ta != null && o.ta >= 3 && o.ta <= 14 ? 1 : 0,
     foggyCold: o.vv != null && o.ta != null && o.vv <= 2000 && o.ta < 3 ? 1 : 0,
     bridgeIce: o.ta != null && o.ta >= 0 && o.ta <= 3 && o.rh != null && o.rh >= 85 ? 1 : 0,

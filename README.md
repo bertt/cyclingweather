@@ -153,6 +153,177 @@ A third page that turns the same GeoParquet data (<https://bertt.github.io/knmi_
 - **Bike cleaning**: estimate from rain now, the last 1/6/24 hours and salt risk.
 - **Red sky warning** (`redSky`): a ⚠️ warning for a chance of a red/orange sky around sunrise or sunset, from a few hours before until the sun has set. It applies when cloud cover is 1–6 octas, it is not raining and the sun is between −4° and 12° elevation. Why: with Rayleigh scattering, cirrus clouds scatter the shorter blue/violet wavelengths away, allowing the longer red/orange wavelengths to dominate. KNMI does not measure cirrus, so partial cloud cover is used as a proxy; it is a heuristic, not a forecast.
 
+#### Photogenic weather moments
+
+Besides the red sky warning, the page shows 📷 warnings for other photogenic moments (rules in `web/cycling-rules.json`, inputs in `web/cycling.html`). `elev` is the sun elevation at the station and `n` the cloud cover in octas. They are heuristics from station data, not forecasts.
+
+| Input | Condition |
+|---|---|
+| `mistLight` | Mist in the low sun: wind ≤ 2 m/s, ΔT ≤ 2 °C, no rain, `elev` 0–15°. |
+| `rime` | Rime/hoar frost: −8 to 0 °C, RH ≥ 90%, wind ≤ 3 m/s, `elev` −6 to 15°. |
+| `rainbow` | Rainbow: shower (`ww` 80–86) or rain without thunder, `n` ≤ 6, `elev` 2–42°. |
+| `goldenHour` | Golden hour: `n` ≤ 2, `elev` 0–6°. |
+| `blueHour` | Blue hour: `n` ≤ 2, `elev` −8 to −4°. |
+| `crepuscular` | Crepuscular rays: `n` 4–6, no rain, `elev` 0–10°. |
+| `stormLight` | Dramatic storm light: thunderstorm (`ww` thunder code) with `elev` 0–15° (stay indoors, lightning is dangerous). |
+| `snowSun` | Snow in sunlight: snow (`ww` snow code, ≤ 2 °C), `n` ≤ 5, `elev` > 5°. |
+| `fullMoon` | Full moon: illumination ≥ 95%, `n` ≤ 6, moon up now or within 3 h. |
+| `starryNight` | Starry night: moon illumination ≤ 10%, `n` ≤ 1, `elev` < −18°, RH ≤ 85%. |
+# knmi_zarr
+
+KNMI 10-minute weather observations → **GeoParquet** → interactive **MapLibre** map.
+
+🌍 **Live demo: https://bertt.github.io/knmi_zarr/**
+
+The demo reads the GeoParquet file directly in the browser (via [hyparquet](https://github.com/hyparam/hyparquet)) and shows all KNMI automatic weather stations (including the Caribbean Netherlands) on a map. The file contains one row per station with 90 numeric observation columns (a description of every variable is in [VARIABLES.md](VARIABLES.md)); the demo currently shows 21 of them, grouped by category: temperature, precipitation, wind, humidity & pressure, and sun, clouds & visibility. The file is prepared for stations from all over the world (spatially sorted, bbox-queryable row groups, see step 2).
+
+## Pipeline
+
+### 1. Download from KNMI
+
+Data comes from the KNMI Data Platform dataset
+[`10-minute-in-situ-meteorological-observations`](https://dataplatform.knmi.nl/dataset/10-minute-in-situ-meteorological-observations-1-0) (NetCDF, one file per 10 minutes, 56 stations).
+
+1. Request a free Open Data API key at <https://developer.dataplatform.knmi.nl/open-data-api>.
+2. Expose it as an environment variable (never commit it):
+
+   ```powershell
+   $env:KNMI_API_KEY = "<your key>"
+   ```
+
+3. Download the latest file:
+
+   ```powershell
+   uv run --with requests python download.py
+   ```
+
+   This calls `GET /datasets/10-minute-in-situ-meteorological-observations/versions/1.0/files` (newest first), then `GET .../files/{filename}/url` for a temporary download URL, and saves e.g. `KMDS__OPER_P___10M_OBS_L2_202610302250.nc`.
+
+### 2. Convert NetCDF → GeoParquet
+
+```powershell
+uv run --with xarray --with netcdf4 --with geopandas --with pyarrow --with numpy python convert.py KMDS__OPER_P___10M_OBS_L2_202610302250.nc
+```
+
+`convert.py` writes `web/obs.parquet` (use `-o <file>` for another path): a [GeoParquet](https://geoparquet.org/) 1.1 file with **one row per station** and all numeric variables as nullable columns (see [VARIABLES.md](VARIABLES.md) for the variable names), compressed with snappy. There is no separate stations file: everything is in this one file. It can be opened in QGIS, GeoPandas, DuckDB and other GeoParquet tools.
+
+Columns:
+
+- `station_id` (string, the KNMI station code; the stable identity), `station_name`, `source` (network, e.g. `KNMI`) and `wsi`,
+- `lat`, `lon` and `height` (station height in m) as plain columns, plus `geometry` (WKB point, EPSG:4326) and `bbox` (GeoParquet covering column),
+- `time`: the observation time (UTC timestamp),
+- the 90 observation variables as `float32` columns (missing value = null). The long name, units and standard name of every variable are stored as JSON in the file metadata (key `knmi:variables`; dataset attributes in `knmi:dataset`).
+
+Stations without a temperature measurement (`ta` is null) are left out of the file.
+
+#### NetCDF vs GeoParquet size
+
+The KNMI NetCDF file holds a single time step (not a time series) for all stations. Example run (`KMDS__OPER_P___10M_OBS_L2_202611032140.nc`):
+
+| Format | Size (bytes) | Stations |
+|---|---|---|
+| NetCDF | 156,175 | 57 |
+| GeoParquet (`obs.parquet`) | 95,902 (about 39% smaller) | 48 |
+
+The 9 stations without temperature are dropped from the GeoParquet.
+
+#### Spatial indexing and worldwide stations
+
+The file is designed so that stations from all over the world can be added, while a user usually wants only a small area:
+
+1. **Z-order (Morton) sort:** lon/lat are quantized to a 16-bit grid (about 0.0055° in longitude, 0.0027° in latitude) and their bits are interleaved into one key. Sorting the stations by this key puts stations that are close together next to each other.
+2. **Row groups:** the rows are written in row groups of 512 stations. Because of the sort, a row group covers a compact area, and Parquet stores the min/max of `lon` and `lat` of every row group in the file footer (statistics).
+3. **Several sources:** `convert.py a.nc b.nc ...` merges the stations of several files (union of the columns, missing values are null; `source` + `station_id` is unique). Stations outside the KNMI network simply have other or missing variables.
+
+A client reads a region like this:
+
+1. Read the footer (metadata and row group statistics) and the small `lon`/`lat` columns, using HTTP range requests.
+2. Select the row groups whose lon/lat range intersects the area of interest.
+3. Read only those row groups of the other columns.
+
+In `web/stations.js` this is `loadStations({ bbox: [west, south, east, north] })` (using [hyparquet](https://github.com/hyparam/hyparquet)). Stations outside the selected row groups keep their `lon`/`lat` but have `id`, `name`, `height` and values set to `null`. Without a bbox all stations are read; the pages do this now, since there are fewer than 512 stations (one row group).
+
+Notes: a Z-order row group can span a larger area than the stations in it suggest (the curve jumps), so the row group areas may overlap and a query can read a few extra row groups. Always identify a station by `source` + `station_id`.
+
+### 2b. Download + convert in one go
+
+To fetch the most recent observations and convert them to `web/obs.parquet` in one command (the API key is only set for this PowerShell session and never committed):
+
+```powershell
+$env:KNMI_API_KEY = "<your key>"
+$nc = uv run --with requests python download.py | Select-Object -Last 1
+uv run --with xarray --with netcdf4 --with geopandas --with pyarrow --with numpy python convert.py $nc
+```
+
+`download.py` prints the downloaded filename, which is passed to `convert.py`. If the API answers `429 Too Many Requests`, the key's rate limit is exhausted: wait a while and retry (see the fair use policy below). To view the result locally, see "Configuration" in step 3.
+
+### 3. Visualize with MapLibre
+
+`web/index.html` is a static page (no build step) that:
+
+- opens the GeoParquet file with hyparquet and reads the selected variables,
+- renders stations on a MapLibre GL JS map (Carto dark basemap) as colored circles, labels and wind arrows,
+- offers variable switching, a legend, statistics, a station list and detail popups.
+
+Run locally (must be served over HTTP):
+
+```powershell
+cd web
+python -m http.server 8765   # open http://localhost:8765
+```
+
+**Configuration:** all three pages (map, nearby, cycling) read the GeoParquet URL from one file, [`web/config.json`](web/config.json):
+
+```json
+{ "parquet": "obs.parquet" }
+```
+
+- The value is an absolute URL or a path relative to the config file. The default `obs.parquet` is the file next to the pages: on GitHub Pages that is <https://bertt.github.io/knmi_zarr/obs.parquet>, locally it is your own `web/obs.parquet` (step 2 / 2b). So local development needs no changes.
+- To read another file, use its URL, e.g. `{ "parquet": "https://bertt.github.io/knmi_zarr/obs.parquet" }` (a file on another origin must allow CORS and range requests).
+- Another config file can be used per page with the URL parameter `?config=<file or url>` (relative to the page), e.g. `cycling.html?config=my-config.json&station=De%20Bilt`. The parameter is passed on automatically in the links between the pages, so you stay on the same data while navigating.
+- **Errors:** if the config file or the GeoParquet file cannot be found, the page shows a message such as `GeoParquet file not found at http://localhost:8765/obs.parquet (...). Check the "parquet" URL in the config file ... or create the data with convert.py.` instead of an empty page.
+
+### 4. Weather near you (`web/nearby.html`)
+
+🌦️ **Live: <https://bertt.github.io/knmi_zarr/nearby.html>**
+
+A second static page that shows the weather at your location as a card with a weather icon. It uses the same GeoParquet file (`obs.parquet`) as the map, including the stations, read in the browser with hyparquet (via the shared module `web/stations.js`). There is no server and no API key.
+
+How it works:
+
+1. The browser location (`navigator.geolocation`) is requested. It never leaves the browser.
+2. The data is read from the GeoParquet URL in `web/config.json` (default `obs.parquet`, i.e. the file next to the page).
+3. The distance to every station that reports a temperature is calculated (haversine); the nearest one is used.
+4. The icon and theme are derived from the observations:
+   - thunderstorm, rain, snow or sleet from precipitation intensity (`rg`, `pg`), temperature and the present-weather code (`ww`),
+   - fog from visibility (`vv` < 1 km) or `ww`,
+   - sun, partly cloudy or cloudy from cloud cover (`n`, in oktas; falls back to global radiation `qg`),
+   - sun or moon from the sun's elevation at the station, computed from the observation time.
+5. The card shows temperature, wind speed and direction, gusts, humidity, dew point, pressure, visibility and rainfall. The background colour follows the weather.
+6. Outside the Netherlands (nearest station more than 150 km away) or without location permission, **De Bilt** (the KNMI main station, in Utrecht) is shown, with a notice.
+
+The page links to KNMI (source), the CC BY 4.0 license, the GeoParquet URL it reads (`https://bertt.github.io/knmi_zarr/obs.parquet`) and this repository, and states that the data is converted and not an official KNMI product.
+
+A station picker lets you switch to any of the 56 stations (distance is shown when the location is known).
+
+### 5. Cycling weather (`web/cycling.html`)
+
+🚴 **Live: <https://bertt.github.io/knmi_zarr/cycling.html>**
+
+A third page that turns the same GeoParquet data (<https://bertt.github.io/knmi_zarr/obs.parquet>, read in the browser with hyparquet) into cycling advice for the nearest (or a chosen) station:
+
+- **Ride score** (0-100): one score that combines comfort and training (the average of both). Sun and dry is good; rain, extreme cold or heat, storm-force wind and poor visibility are bad; moderate wind and cold count as a small plus for training. The rules are listed in the calculation details.
+- **What to wear**: based on the temperature *on the bike* (air temperature about 2 °C lower, extra for rain, damp air via the dew point and wind chill), e.g. short/short above 15 °C, gloves and skullcap below 10 °C, windjacket below 12 °C, windjacket + base layer below 0 °C. Extras for rain, darkness, sun and ice.
+- **Feels-like temperature**: a 🧊 pill shows a standard formula next to the temperature on the bike: wind chill `13.12 + 0.6215·T − 11.37·v^0.16 + 0.3965·T·v^0.16` (T ≤ 10 °C, wind > 4.8 km/h, v = 10 m wind in km/h) or the heat index (T ≥ 27 °C, uses relative humidity). It is hidden when neither formula applies (e.g. calm wind, or 10–27 °C). It ignores riding speed, darkness and wind direction, so it is usually milder than the temperature on the bike.
+- **Thick wind ("dikke wind")**: a 🪨 pill flags cold, high-pressure air, which is denser and gives more air resistance ([background](https://www.allesoverwielrennen.nl/dikke-wind/)). The air density is computed from temperature, pressure and humidity and compared with standard air (1.225 kg/m³): +3.5% or more is "thick wind", +7% or more "very thick wind", −3.5% or less "thin wind"; in between nothing is shown. At 1013 hPa and dry air that is roughly ≤ 5 °C for thick and ≤ −5 °C for very thick; higher pressure shifts this a few degrees warmer. The density uses the virtual temperature, which accounts for humidity: `ρ = (pp·100)/(287.05·T_v)` in kg/m³, with `T_v = T/(1 − (e/pp)·(1 − 0.622))`, `T = ta + 273.15` (K), `e = es(td)` (vapour pressure from the dew point, hPa; from `rh` if the dew point is missing) and `es(x) = 6.1078·10^(7.5·x/(x+237.3))` (Magnus formula). The relative difference is `(ρ / 1.225 − 1)·100`. The thresholds are hard-coded in `web/cycling.html`, not in the rules file.
+- **Temperature and humidity**: all temperature data are shown together, without a separate header, (air temperature, feels-like on the bike, wind chill/heat index) with a humidity line such as `94% RH | Td 3.8°C | ΔT 1.9°C` (relative humidity, dew point, dew point depression = air temperature − dew point). ΔT is colour-coded: ≤ 2 °C red (very clammy / fog risk), 2–5 °C yellow (humid), 5–10 °C light green (moderate), > 10 °C green (relatively dry). Under it, rules from the `humidity` section of the rules file give:
+  - **Fog/mist**: strong fog warning at RH ≥ 98% or ΔT ≤ 1 °C; high fog risk at RH ≥ 95% and ΔT ≤ 2 °C; "misty / reduced visibility" at RH ≥ 90% and visibility < 3000 m (the first match is shown).
+  - **Clothing**: T ≥ 22 °C and RH ≥ 70% → light, breathable clothing and extra drinking.
+  - **Bike care** (also part of the bike cleaning score, in the `cleaning` section): RH ≥ 85% and > 0.5 mm rain in 6 h → +1 point, rinse and lube the chain; RH ≥ 90% / ≥ 95% → +1 / +2 points (damp air), at ≥ 95% also a corrosion warning to dry and lube; RH ≤ 50% and no recent rain → −1 point, a light wipe is enough.
+  - **Tips**: RH ≥ 85% after rain → roads stay slippery; RH ≤ 40% → watch hydration.
+- **Bike cleaning**: estimate from rain now, the last 1/6/24 hours and salt risk.
+- **Red sky warning** (`redSky`): a ⚠️ warning for a chance of a red/orange sky around sunrise or sunset, from a few hours before until the sun has set. It applies when cloud cover is 1–6 octas, it is not raining and the sun is between −4° and 12° elevation. Why: with Rayleigh scattering, cirrus clouds scatter the shorter blue/violet wavelengths away, allowing the longer red/orange wavelengths to dominate. KNMI does not measure cirrus, so partial cloud cover is used as a proxy; it is a heuristic, not a forecast.
+
 #### Ideas for other photogenic weather moments
 
 Possible future warnings, in the same style as the red sky one:
