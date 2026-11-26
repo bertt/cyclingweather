@@ -288,6 +288,7 @@
       { "when": { "input": "dryCold", "op": "gte", "value": 1 }, "items": ["Lip balm"], "warning": "Dry, cold air: lip balm and a buff over your nose and mouth help." },
       { "when": { "input": "ta", "op": "lt", "value": -10 }, "items": ["Ski goggles"], "warning": "Extreme cold: ski goggles protect your eyes and face from the icy wind." },
       { "when": { "input": "sunGlare", "op": "gte", "value": 1 }, "warning": "Low sun: glare can hide obstacles." },
+      { "when": { "input": "redSky", "op": "gte", "value": 1 }, "warning": "Chance of a red/orange sky around sunrise or sunset (within a few hours before and during). Rayleigh scattering: cirrus clouds scatter the shorter blue/violet wavelengths away, allowing the longer red/orange wavelengths to dominate." },
       { "when": [{ "input": "qg", "op": "gte", "value": 600 }, { "input": "rideTemp", "op": "gte", "value": 18 }], "items": ["Sun sleeves or light jersey"] },
       { "when": [{ "input": "darkness", "op": "gt", "value": 0 }, { "input": "night", "op": "lt", "value": 1 }, { "input": "dawn", "op": "lt", "value": 1 }, { "input": "rideTemp", "op": "lt", "value": 12 }], "items": ["Extra layer in your pocket"], "warning": "It gets dark soon and cooler: take an extra layer in case you ride longer." },
       { "when": { "input": "coldEastWind", "op": "gte", "value": 1 }, "warning": "Cold easterly wind: it feels colder than the temperature suggests." },

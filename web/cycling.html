@@ -306,7 +306,7 @@ const bft = v => [0.3,1.6,3.4,5.5,8,10.8,13.9,17.2,20.8,24.5,28.5,32.7].filter(t
 const sunWord = q => q < 10 ? "dark / no sun" : q < 100 ? "overcast" : q < 250 ? "cloudy" : q < 500 ? "partly sunny" : q < 800 ? "sunny" : "very sunny";
 const sg = v => `${v < 0 ? "−" : "+"}${Math.abs(v)}°`;
 const INPUT_NAMES = { pp: "air pressure (hPa)", comfort: "ride comfort score", rainIntensity: "rain now (mm/h)", rain1h: "rain last hour (mm)", rain6h: "rain last 6 h (mm)", rain24h: "rain last 24 h (mm)",
-  rideTemp: "temperature on the bike (°C)", ta: "air temperature (°C)", qg: "sun (W/m²)", vv: "visibility (m)", night: "dark", darkness: "darkness (%)", moonlight: "bright moon and clear sky", dull: "overcast and windless", coldEastWind: "cold easterly wind", sunGlare: "low sun glare", leafRisk: "wet autumn leaves", foggyCold: "fog and cold", bridgeIce: "ice on bridges", dryCold: "dry cold air", intervalWeather: "calm and dry", wetDrive: "wet drivetrain", wetRoads: "roads still wet (slow drying, shade)", moonIllumination: "moon illuminated (%)", darkSoon: "dark within 2 hours", iceRisk: "ice risk", saltRisk: "salt risk", hail: "hail", snow: "snow", thunder: "thunderstorm", ff: "wind (m/s)", gust: "gusts (m/s)", rh: "humidity (%)" };
+  rideTemp: "temperature on the bike (°C)", ta: "air temperature (°C)", qg: "sun (W/m²)", vv: "visibility (m)", night: "dark", darkness: "darkness (%)", moonlight: "bright moon and clear sky", dull: "overcast and windless", coldEastWind: "cold easterly wind", sunGlare: "low sun glare", redSky: "chance of a red sky", leafRisk: "wet autumn leaves", foggyCold: "fog and cold", bridgeIce: "ice on bridges", dryCold: "dry cold air", intervalWeather: "calm and dry", wetDrive: "wet drivetrain", wetRoads: "roads still wet (slow drying, shade)", moonIllumination: "moon illuminated (%)", darkSoon: "dark within 2 hours", iceRisk: "ice risk", saltRisk: "salt risk", hail: "hail", snow: "snow", thunder: "thunderstorm", ff: "wind (m/s)", gust: "gusts (m/s)", rh: "humidity (%)" };
 const OP_TEXT = { gt: ">", gte: "≥", lt: "<", lte: "≤", eq: "=" };
 const condText = c => ["night", "darkSoon", "iceRisk", "snow", "saltRisk", "coldEastWind", "sunGlare", "leafRisk", "foggyCold", "bridgeIce", "dryCold", "intervalWeather", "wetDrive"].includes(c.input) && c.op === "gte" && c.value === 1
   ? INPUT_NAMES[c.input] : `${INPUT_NAMES[c.input] ?? c.input} ${OP_TEXT[c.op] ?? c.op} ${c.value}`;
@@ -466,6 +466,7 @@ function derive(o, s, t, R) {
     dull: o.n != null && o.ff != null && o.n >= (r.dullMinCloudOctas ?? 7) && o.ff <= (r.dullMaxWindMs ?? 2.5) ? 1 : 0,
     coldEastWind: o.dd != null && o.ff != null && o.ta != null && o.dd >= 30 && o.dd <= 150 && o.ff >= 4 && o.ta < 10 ? 1 : 0,
     sunGlare: o.n != null && o.n <= 5 && elev > 0 && elev < (r.glareMaxElevationDeg ?? 12) ? 1 : 0,
+    redSky: o.n != null && o.n >= 1 && o.n <= 6 && !raining && elev > -4 && elev < 12 ? 1 : 0,
     leafRisk: t.getMonth() >= 8 && t.getMonth() <= 10 && (o.R24H ?? 0) >= 2 && o.ta != null && o.ta >= 3 && o.ta <= 14 ? 1 : 0,
     foggyCold: o.vv != null && o.ta != null && o.vv <= 2000 && o.ta < 3 ? 1 : 0,
     bridgeIce: o.ta != null && o.ta >= 0 && o.ta <= 3 && o.rh != null && o.rh >= 85 ? 1 : 0,

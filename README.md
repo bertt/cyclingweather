@@ -151,6 +151,22 @@ A third page that turns the same GeoParquet data (<https://bertt.github.io/knmi_
   - **Bike care** (also part of the bike cleaning score, in the `cleaning` section): RH ≥ 85% and > 0.5 mm rain in 6 h → +1 point, rinse and lube the chain; RH ≥ 90% / ≥ 95% → +1 / +2 points (damp air), at ≥ 95% also a corrosion warning to dry and lube; RH ≤ 50% and no recent rain → −1 point, a light wipe is enough.
   - **Tips**: RH ≥ 85% after rain → roads stay slippery; RH ≤ 40% → watch hydration.
 - **Bike cleaning**: estimate from rain now, the last 1/6/24 hours and salt risk.
+- **Red sky warning** (`redSky`): a ⚠️ warning for a chance of a red/orange sky around sunrise or sunset, from a few hours before until the sun has set. It applies when cloud cover is 1–6 octas, it is not raining and the sun is between −4° and 12° elevation. Why: with Rayleigh scattering, cirrus clouds scatter the shorter blue/violet wavelengths away, allowing the longer red/orange wavelengths to dominate. KNMI does not measure cirrus, so partial cloud cover is used as a proxy; it is a heuristic, not a forecast.
+
+#### Ideas for other photogenic weather moments
+
+Possible future warnings, in the same style as the red sky one:
+
+- **Mist in the low sun**: clear and calm night (low wind, ΔT ≤ 2 °C) with low sun after sunrise gives golden, hazy light and fog over fields.
+- **Rime/hoar frost**: sub-zero temperature with high humidity and little wind, especially at sunrise.
+- **Rainbow**: a shower nearby (`ww` rain/shower code) while the sun is below ~42° and cloud cover is partial.
+- **Golden hour**: clear sky (≤ 2 octas) with the sun at 0–6° elevation, for warm light and long shadows.
+- **Blue hour**: sun between −4° and −8° with a clear sky, for deep blue twilight.
+- **Full moon rise**: bright moon (illumination ≥ 95%) just above the horizon on a mostly clear sky (partly covered by the existing `fullMoon` input).
+- **Crepuscular rays**: broken cloud (4–6 octas) with the sun low on the horizon.
+- **Dramatic storm light**: thunderstorm or heavy shower close by while the sun still shines at a low angle (stay safe, do not ride in lightning).
+- **Snow in sunlight**: fresh snow (`snow` input) combined with a clear sky.
+- **Clear starry night**: new moon (illumination ≤ 10%), clear sky (≤ 1 octa), dry air for the Milky Way and stars.
 
 All rules and thresholds live in [`web/cycling-rules.json`](web/cycling-rules.json), so they can be tuned without touching the code. Rules are `bands` (`upTo` value, `points`, `note`; `upTo: null` = everything above), clothing bands/extras, and cleaning rules/levels. The page has these URL parameters:
 
