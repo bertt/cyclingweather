@@ -151,15 +151,14 @@ A third page that turns the same GeoParquet data (<https://bertt.github.io/knmi_
   - **Bike care** (also part of the bike cleaning score, in the `cleaning` section): RH ≥ 85% and > 0.5 mm rain in 6 h → +1 point, rinse and lube the chain; RH ≥ 90% / ≥ 95% → +1 / +2 points (damp air), at ≥ 95% also a corrosion warning to dry and lube; RH ≤ 50% and no recent rain → −1 point, a light wipe is enough.
   - **Tips**: RH ≥ 85% after rain → roads stay slippery; RH ≤ 40% → watch hydration.
 - **Bike cleaning**: estimate from rain now, the last 1/6/24 hours and salt risk.
-- **Red sky warning** (`redSky`): a ⚠️ warning for a chance of a red/orange sky around sunrise or sunset, from a few hours before until the sun has set. It applies when cloud cover is 1–6 octas, it is not raining and the sun is between −4° and 12° elevation. Why: with Rayleigh scattering, cirrus clouds scatter the shorter blue/violet wavelengths away, allowing the longer red/orange wavelengths to dominate. KNMI does not measure cirrus, so partial cloud cover is used as a proxy; it is a heuristic, not a forecast.
 
 #### Photogenic weather moments
 
-Besides the red sky warning, the page shows 📷 warnings for other photogenic moments (rules in `web/cycling-rules.json`, inputs in `web/cycling.html`). `elev` is the sun elevation at the station and `n` the cloud cover in octas. They are heuristics from station data, not forecasts.
+The page shows 📷 warnings for photogenic moments (rules in `web/cycling-rules.json`, inputs in `web/cycling.html`). `elev` is the sun elevation at the station and `n` the cloud cover in octas. They are heuristics from station data, not forecasts.
 
 | Input | Condition |
 |---|---|
-| `redSky` | Red sky: `n` 1–6, no rain, `elev` −4 to 12° (see above). |
+| `redSky` | Red sky (sunrise/sunset, from a few hours before until the sun has set): `n` 1–6, no rain, `elev` −4 to 12°. Rayleigh scattering: cirrus clouds scatter the shorter blue/violet wavelengths away, allowing the longer red/orange wavelengths to dominate. KNMI does not measure cirrus, so partial cloud cover is the proxy. |
 | `mistLight` | Mist in the low sun: wind ≤ 2 m/s, ΔT ≤ 2 °C, no rain, `elev` 0–15°. |
 | `rime` | Rime/hoar frost: −8 to 0 °C, RH ≥ 90%, wind ≤ 3 m/s, `elev` −6 to 15°. |
 | `rainbow` | Rainbow: shower (`ww` 80–86) or rain without thunder, `n` ≤ 6, `elev` 2–42°. |
