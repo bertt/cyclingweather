@@ -159,6 +159,7 @@ Besides the red sky warning, the page shows 📷 warnings for other photogenic m
 
 | Input | Condition |
 |---|---|
+| `redSky` | Red sky: `n` 1–6, no rain, `elev` −4 to 12° (see above). |
 | `mistLight` | Mist in the low sun: wind ≤ 2 m/s, ΔT ≤ 2 °C, no rain, `elev` 0–15°. |
 | `rime` | Rime/hoar frost: −8 to 0 °C, RH ≥ 90%, wind ≤ 3 m/s, `elev` −6 to 15°. |
 | `rainbow` | Rainbow: shower (`ww` 80–86) or rain without thunder, `n` ≤ 6, `elev` 2–42°. |
