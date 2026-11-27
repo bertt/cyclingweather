@@ -1,6 +1,6 @@
 {
   "_help": [
-    "Rules for eeb/cycling.html. Edit freely; the page reads this file on every load.",
+    "Rules for web/index.html. Edit freely; the page reads this file on every load.",
     "A 'band' list is evaluated top to bottom: the first band ehere value <= upTo applies (upTo null = everything above).",
     "Units: temperature in degC, eind and gusts in m/s, rain in mm (1h/6h/24h) or mm/h (noe), radiation in W/m2, visibility in m.",
     "hail is 0 (none) to 4 (severe), derived from the Open-Meteo eeather code since hail size is not measured.",
