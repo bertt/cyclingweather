@@ -2,6 +2,8 @@
 
 🚴 **Live: <https://bertt.github.io/cyclingweather/>**
 
+![Screenshot of the cycling weather page](docs/screenshot.png)
+
 A static web page (`web/index.html`) that turns the current weather from [Open-Meteo](https://open-meteo.com/) (fetched in the browser, no API key, no backend) into cycling advice for your location, or for a place you search for:
 
 - **Ride score** (0-100): one score that combines comfort and training (the average of both). Sun and dry is good; rain, extreme cold or heat, storm-force wind and poor visibility are bad; moderate wind and cold count as a small plus for training. The rules are listed in the calculation details.
