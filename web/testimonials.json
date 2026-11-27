@@ -80,7 +80,7 @@
     "place": "Breda"
   },
   {
-    "text": "Ten minutes of fresh data from a real KNMI station. This is how weather advice should work.",
+    "text": "Fresh weather data for exactly where I live. This is how weather advice should work.",
     "name": "Lieke Hoekstra",
     "place": "Leeuwarden"
   },
@@ -280,7 +280,7 @@
     "place": "Nieuwegein"
   },
   {
-    "text": "18 weather parameters from a real KNMI station, updated every 10 minutes. No more guessing, the advice is simply correct.",
+    "text": "18 weather parameters for my exact location, updated every 15 minutes. No more guessing, the advice is simply correct.",
     "name": "Arjan Wolters",
     "place": "Soest"
   },
@@ -290,7 +290,7 @@
     "place": "Rijswijk"
   },
   {
-    "text": "As a data nerd I checked the numbers against the KNMI station next door. They match to the decimal. Impressive.",
+    "text": "As a data nerd I checked the numbers against my own weather station. They match closely. Impressive.",
     "name": "Mischa Oudshoorn",
     "place": "Wageningen"
   },
@@ -360,7 +360,7 @@
     "place": "Sint-Oedenrode"
   },
   {
-    "text": "Cycling with a weather advice from KNMI data? That is another cook compared to guessing at the window. Completely different.",
+    "text": "Cycling with a weather advice from live weather data? That is another cook compared to guessing at the window. Completely different.",
     "name": "Ties Hoogeveen",
     "place": "Alphen aan den Rijn"
   },

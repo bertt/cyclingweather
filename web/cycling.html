@@ -12,7 +12,7 @@
 </script>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Cycling weather · KNMI GeoParquet demo</title>
+<title>Cycling weather · Open-Meteo</title>
 <style>
   :root { --fg:#e8edf5; --mut:#8fa0b8; --acc:#4cc9f0; --bg1:#0e1420; --bg2:#0f3d3a; }
   * { box-sizing:border-box; }
@@ -127,19 +127,17 @@
 .hline .sep { opacity:.4; }
 .hline .dt { color:#111; padding:2px 8px; border-radius:8px; }
 
-  .compass { display:block; width:100%; flex:0 0 52%; max-width:190px; margin:0; }
-  .dirsec { margin-top:2px; text-align:center; } .dirhead { font-size:11.5px; font-weight:600; letter-spacing:.08em; text-transform:uppercase; color:var(--mut); }
-  .windline { font-size:13px; margin-top:2px; } .dirsec .why { font-size:12px; }
-  .compass text { text-anchor:middle; font-family:inherit; }
+  .dirsec { margin-top:2px; text-align:center; }
   .fullmoon { font-size:34px; line-height:1; filter:drop-shadow(0 0 8px rgba(255,240,170,.7)); }
-  .dirrow { display:flex; align-items:center; justify-content:center; gap:10px; }
-  .dirtxt { flex:1 1 0; min-width:0; text-align:left; } .dirtxt .why { margin-top:3px; font-size:11.5px; line-height:1.3; }
+  .dirrow { display:flex; align-items:center; justify-content:center; gap:12px; }
+  .dirtxt { flex:1 1 0; min-width:0; text-align:left; }
+  .bigscore { flex:none; width:76px; height:76px; border-radius:50%; border:4px solid; display:grid; place-items:center; font-size:30px; font-weight:800; background:rgba(16,23,38,.95); }
   .bigverdict { font-size:20px; font-weight:800; line-height:1.1; } .bigverdict span { display:inline; font-size:22px; margin-right:4px; }
-  .compass .godir { cursor:pointer; } .compass .godir:hover circle { fill-opacity:.5; }
-  .compass .wl { font-size:18px; fill:#9ad1ff; font-weight:600; }
-  .compass .dv { font-size:15px; font-weight:700; } .compass .dl { font-size:9px; fill:#cfd8e6; letter-spacing:.06em; }
-  .compass .cs1 { font-size:13px; fill:#e8eef8; font-weight:600; } .compass .cs2 { font-size:32px; font-weight:800; }
-  .compass .best circle { filter:drop-shadow(0 0 6px currentColor); }
+  .searchform { display:flex; gap:6px; margin-top:8px; justify-content:center; }
+  .searchform input { flex:1 1 auto; max-width:260px; font:inherit; font-size:14px; color:#fff; background:rgba(0,0,0,.28); border:1px solid rgba(255,255,255,.25); border-radius:999px; padding:4px 12px; }
+  .places { margin-top:8px; display:grid; gap:4px; }
+  .places a { display:block; padding:5px 12px; border-radius:12px; background:rgba(255,255,255,.07); color:var(--fg); text-decoration:none; font-size:13px; }
+  .places a small { color:var(--mut); }
   .sec { margin-top:14px; padding:13px 14px; border-radius:20px; background:rgba(255,255,255,.05); }
   .sec h2 { margin:0 0 8px; font-size:12px; font-weight:600; letter-spacing:.1em; text-transform:uppercase; color:var(--mut); }
   .outfit { font-size:17px; font-weight:650; }
@@ -260,8 +258,8 @@
   .grow { display:flex; gap:8px; align-items:baseline; padding:3px 0; border-top:1px solid rgba(255,255,255,.07); }
   .glabel { flex:0 0 62px; font-size:10.5px; letter-spacing:.08em; text-transform:uppercase; color:var(--mut); }
   .grow .chips { margin-top:0; }
-  .dirsec .compass { max-width:118px; }
-  .dirrow { gap:6px; }
+  .dirrow { gap:8px; }
+  .bigscore { width:56px; height:56px; font-size:22px; border-width:3px; }
   .wx { margin-top:4px; }
   .grow { padding:2px 0; gap:6px; }
   .glabel { flex-basis:38px; font-size:10px; letter-spacing:.04em; }
@@ -288,52 +286,44 @@
 <body>
 <div class="wrap">
   <div class="testi" id="testi" hidden></div>  <dialog id="info">
-    <form method="dialog" class="ihead"><div><div class="ititle">🚴 Cycling weather</div><div class="isub">Should you ride today, and what should you wear? Advice based on live weather observations.</div></div>
+    <form method="dialog" class="ihead"><div><div class="ititle">🚴 Cycling weather</div><div class="isub">Should you ride today, and what should you wear? Advice based on the current weather.</div></div>
       <button class="iclose" aria-label="Close">✕</button></form>
-    <div class="inav"><a href="./">🗺️ All stations on a map</a><a href="nearby.html">🌦️ Weather near you</a></div>
     <div id="aboutmain">
     <div class="isec"><h4>👋 About this site</h4>
-      <p>This page finds the nearest KNMI weather station and turns its latest measurements into practical advice for cyclists: a ride score, what to wear, whether you need a rain jacket, and how to clean your bike afterwards. It also warns about ice, fog, darkness and thunder.</p>
+      <p>This page takes the current weather at your location and turns it into practical advice for cyclists: a ride score, what to wear, whether you need a rain jacket, and how to clean your bike afterwards. It also warns about ice, fog, darkness and thunder.</p>
       <p>It uses <b>18 weather parameters</b>: temperature, dew point, humidity, air pressure, wind speed, direction and gusts, sun radiation, visibility, cloud cover, sunshine duration, rain intensity, rain over the last 1, 6 and 24 hours, and the present-weather code.</p>
       <p>Next to the temperature on the bike, the 🧊 pill shows a standard "feels like" temperature from air temperature and wind: the wind chill formula (T ≤ 10 °C, wind &gt; 4.8 km/h) <code>13.12 + 0.6215·T − 11.37·v<sup>0.16</sup> + 0.3965·T·v<sup>0.16</sup></code> (v = wind at 10 m in km/h), or the heat index (T ≥ 27 °C, with humidity). The 🪨 pill flags <a href="https://www.allesoverwielrennen.nl/dikke-wind/" target="_blank" rel="noopener">"dikke wind"</a>: cold, high-pressure air is denser and gives more air resistance. It is calculated from temperature, pressure and humidity (via the dew point, as virtual temperature) relative to standard air (1.225 kg/m³) and shown at +3.5% (thick), +7% (very thick) or −3.5% (thin). The 🧊 pill is hidden when neither formula applies (e.g. calm wind, or 10–27 °C). It does not include riding speed, darkness or wind direction, so it differs from the temperature on the bike.</p>
       <p>The temperature data are grouped together at the top, with relative humidity (RH), the dew point (Td) and the dew point depression ΔT = air temperature − dew point, e.g. <code>94% | Td 3.8°C | ΔT 1.9°C</code>. ΔT is colour-coded: ≤ 2 °C red (very clammy, fog risk), 2–5 °C yellow (humid), 5–10 °C light green (moderate), &gt; 10 °C green (relatively dry). Humidity also drives fog warnings (RH ≥ 98% or ΔT ≤ 1 °C strong; RH ≥ 95% and ΔT ≤ 2 °C high; RH ≥ 90% with visibility &lt; 3 km misty), clothing advice (warm and humid: light clothing and extra drinking), bike cleaning advice (RH ≥ 95%: corrosion risk; RH ≤ 50% and no recent rain: light wipe) and tips (slippery roads, dry air).</p>
       <p>Cycling quotes come from <a href="https://www.velominati.com/the-rules/">The Rules</a> by Velominati.</p>
       <p><button type="button" id="calcbtn">🧮 How are the scores calculated?</button></p></div>
-    <div class="isec"><h4>🧊 Data and GeoParquet</h4>
-      <p>The observations are 10-minute <a href="https://www.knmi.nl/">KNMI</a> measurements (<a href="https://dataplatform.knmi.nl/dataset/10-minute-in-situ-meteorological-observations-1-0">dataset</a>, <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>), published as NetCDF and       converted to <a href="https://geoparquet.org/">GeoParquet</a>. Not an official KNMI product.</p>
-            <p>GeoParquet is an open, columnar format for geospatial data. The stations are sorted by location and stored in small row groups, so your browser can fetch just the pieces it needs (HTTP range requests) straight from static storage, with no server or API in between.</p>
-            <p>GeoParquet source: <a id="zsrc" href="#"></a><br>
-              The station id, name, height and location are stored in the same file.</p></div>
+    <div class="isec"><h4>🌦️ Data</h4>
+      <p>Weather data by <a href="https://open-meteo.com/">Open-Meteo.com</a> (<a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>, free for non-commercial use). The values come from weather models on a grid of a few kilometres, not from a weather station, so they can differ slightly from what you measure yourself. Places are looked up with the Open-Meteo geocoding API.</p></div>
 <div class="isec"><h4>🧮 Advice</h4>
       <p>Indicative advice based on the rules in <a id="rulesurl" href="#"></a>. Add <code>?rules=URL</code> to try your own.</p></div>
     <div class="isec"><h4>🔒 Privacy</h4>
-      <p>Your location stays in your browser.</p></div>
+      <p>Your location stays in your browser, except that the weather request (Open-Meteo) and the place-name lookup (<a href="https://www.bigdatacloud.com/">BigDataCloud</a>) receive your coordinates.</p></div>
     </div>
     <div id="calcslot" hidden></div>
-    <div class="ifoot"><a href="https://github.com/bertt/knmi_zarr">⭐ Source code on GitHub</a><div class="iauthor">Author © Bert Temme</div></div>
+    <div class="ifoot"><a href="https://github.com/bertt/cyclingweather">⭐ Source code on GitHub</a><div class="iauthor">Author © Bert Temme</div></div>
   </dialog>
   <div class="card" id="card"><div class="loading"><div class="bike">🚴</div><div class="road"></div><div class="lt">Checking the weather…</div>
   <div class="steps"><div class="step run" id="s-loc"><span class="si">⏳</span> <span class="st">Determining your location</span></div>
-    <div class="step run" id="s-data"><span class="si">⏳</span> <span class="st">Fetching KNMI data</span></div>
+    <div class="step run" id="s-data"><span class="si">⏳</span> <span class="st">Fetching weather data</span></div>
     <div class="step wait" id="s-calc"><span class="si">⚪</span> <span class="st">Analysing data</span></div></div></div></div>
 </div>
 
 <script type="module">
-import { loadStations, DATA_URL } from "./stations.js";
+import { loadWeather, searchPlaces, reverseGeocode } from "./openmeteo.js";
 
 const PARAMS = new URLSearchParams(location.search);
 const RULES_URL = PARAMS.get("rules") || "cycling-rules.json";
 const rulesLink = document.getElementById("rulesurl");
 rulesLink.href = RULES_URL; rulesLink.textContent = RULES_URL;
-const STATION = PARAMS.get("station");
-const SHARE_URL = "https://bertt.github.io/knmi_zarr/cycling.html";
-const FALLBACK = "De Bilt";
-const MAX_KM = 150;
-const VARS = ["ta","td","rh","ff","dd","gff","fx","qg","vv","n","ss","rg","pg","R1H","R6H","R24H","ww","pp"];
+const SHARE_URL = "https://bertt.github.io/cyclingweather/cycling.html";
+const LAT = parseFloat(PARAMS.get("lat")), LON = parseFloat(PARAMS.get("lon"));
+const HAS_PLACE = Number.isFinite(LAT) && Number.isFinite(LON) && Math.abs(LAT) <= 90 && Math.abs(LON) <= 180;
 
 const card = document.getElementById("card");
-const zsrc = document.getElementById("zsrc");
-zsrc.href = DATA_URL; zsrc.textContent = DATA_URL;
 document.getElementById("info").addEventListener("click", e => { if (e.target.id === "info") e.target.close(); });
 
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;" }[c]));
@@ -359,11 +349,6 @@ const condText = c => ["night", "darkSoon", "iceRisk", "snow", "saltRisk", "cold
 const compass = d => ["N","NE","E","SE","S","SW","W","NW"][Math.round(d/45) % 8];
 const maxOf = (...a) => { const v = a.filter(x => x != null); return v.length ? Math.max(...v) : null; };
 
-function km(lat1, lon1, lat2, lon2) {
-  const r = Math.PI/180, a = Math.sin((lat2-lat1)*r/2)**2 +
-    Math.cos(lat1*r)*Math.cos(lat2*r)*Math.sin((lon2-lon1)*r/2)**2;
-  return 12742 * Math.asin(Math.sqrt(a));
-}
 const getPosition = () => new Promise((res, rej) => navigator.geolocation
   ? navigator.geolocation.getCurrentPosition(res, rej, { timeout:10000, maximumAge:600000 })
   : rej(new Error("Geolocation is not supported by this browser")));
@@ -488,8 +473,8 @@ function derive(o, s, t, R) {
   }
   const wetNow = (o.R1H ?? 0) > 0.1 || raining;
   const moon = moonInfo(t, s.lat, s.lon);
-  const thunderNow = [17, 29, 91, 92, 93, 94, 95, 96, 97, 98, 99].includes(o.ww);
-  const snowNow = [22, 36, 37, 38, 39, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 83, 84, 85, 86].includes(o.ww) && o.ta != null && o.ta <= 2;
+  const thunderNow = [95, 96, 99].includes(o.ww);
+  const snowNow = [71, 73, 75, 77, 85, 86].includes(o.ww) && o.ta != null && o.ta <= 2;
   const elev = sunElevation(t, s.lat, s.lon);
   const moonlight = darkness >= 50 && o.n != null && o.n <= (r.moonMaxCloudOctas ?? 2) &&
     moon.illumination >= (r.moonMinIlluminationPct ?? 50) && moon.altitude >= (r.moonMinAltitudeDeg ?? 5) ? 1 : 0;
@@ -504,9 +489,9 @@ function derive(o, s, t, R) {
     iceRisk: o.ta != null && o.ta <= r.iceTempC && (wetNow || (o.rh != null && o.rh >= r.iceHumidityPct)) ? 1 : 0,
     saltRisk: o.ta != null && o.ta <= r.saltTempC && (wetNow || (o.R6H ?? 0) > 0.5) ? 1 : 0,
     wetRoads: o.ta != null && o.ta <= 14 && ((o.R24H ?? 0) >= 0.2 || (o.R6H ?? 0) >= 0.1) && (o.qg ?? 0) < 500 ? 1 : 0,
-    hail: { 87: 1, 27: 2, 89: 2, 88: 3, 90: 3, 96: 3, 99: 4 }[o.ww] ?? 0,
-    thunder: { 17: 1, 29: 1, 91: 1, 92: 1, 93: 1, 94: 1, 95: 2, 96: 2, 97: 2, 98: 2, 99: 2 }[o.ww] ?? 0,
-    snow: [22, 36, 37, 38, 39, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 83, 84, 85, 86].includes(o.ww) && o.ta != null && o.ta <= 2 ? 1 : 0,
+    hail: { 96: 3, 99: 4 }[o.ww] ?? 0,
+    thunder: { 95: 2, 96: 2, 99: 2 }[o.ww] ?? 0,
+    snow: snowNow ? 1 : 0,
     night: sunElevation(t, s.lat, s.lon) < -1 ? 1 : 0,
     darkness,
     dawn: sunElevation(new Date(t.getTime() + 10 * 6e4), s.lat, s.lon) > elev ? 1 : 0,
@@ -548,10 +533,34 @@ const iconFor = item => ITEM_ICONS.find(([re]) => re.test(item))?.[1] ?? "•";
 const valueText = (r, v) => v == null ? "–" : r.display === "flag" ? (v ? "yes" : "no") : `${fmt(v, r.dec ?? 1)}${r.unit ? " " + r.unit : ""}`;
 const signed = (p, dirt = false) => p === 0 ? `<span class="zero">0</span>` : `<span class="${(p > 0) !== dirt ? "pos" : "neg"}">${p > 0 ? "+" : ""}${p}</span>`;
 
-const SENSORS = [
-  { label: "temperature", vars: ["ta"] }, { label: "wind", vars: ["ff"] }, { label: "rain", vars: ["rg", "pg", "R1H"] },
-  { label: "visibility", vars: ["vv"] },
-];
+const PLACE_URL = (lat, lon, name) => {
+  const u = new URL(location.href);
+  u.search = "";
+  u.searchParams.set("lat", lat.toFixed(4)); u.searchParams.set("lon", lon.toFixed(4));
+  if (name) u.searchParams.set("name", name);
+  const rules = PARAMS.get("rules"); if (rules) u.searchParams.set("rules", rules);
+  return u.href;
+};
+
+function renderSearch(message) {
+  card.innerHTML = `<div class="head"><div class="place">📍 Choose a place</div>${message ? `<div class="sub">${esc(message)}</div>` : ""}</div>
+    <form class="searchform" id="searchform"><input id="q" type="search" placeholder="City or village" aria-label="Place" autocomplete="off" required><button type="submit" style="margin-top:0">Search</button></form>
+    <div class="places" id="places"></div>
+    <div style="text-align:center"><button type="button" id="usegps">Use my location</button></div>`;
+  const places = document.getElementById("places");
+  document.getElementById("usegps").onclick = () => { const u = new URL(location.href); u.search = ""; location.href = u; };
+  document.getElementById("searchform").addEventListener("submit", async e => {
+    e.preventDefault();
+    places.textContent = "Searching…";
+    try {
+      const found = await searchPlaces(document.getElementById("q").value.trim());
+      places.innerHTML = found.length
+        ? found.map(p => `<a href="${esc(PLACE_URL(p.lat, p.lon, p.name))}">${esc(p.name)} <small>${esc(p.detail)}</small></a>`).join("")
+        : "No places found.";
+    } catch (err) { places.textContent = `Search failed: ${err.message}`; }
+  });
+  document.getElementById("q").focus();
+}
 
 async function main() {
   const step = (id, state, text) => {
@@ -561,79 +570,32 @@ async function main() {
     el.querySelector(".si").textContent = { run: "⏳", ok: "✅", fail: "⚠️", skip: "➖", wait: "⚪" }[state];
     if (text) el.querySelector(".st").textContent = text;
   };
-  const makePos = () => getPosition().then(c => { step("s-loc", "ok", "Location found"); return c; },
-    e => { step("s-loc", "fail", "Location unavailable"); throw e; });
-  const posP = STATION ? null : makePos();
-  posP?.catch(() => {});
-  if (STATION) step("s-loc", "skip", "Using the station from the link");
-  const [meta, R, allRules] = await Promise.all([
-    loadStations(),
+  let user = null, place;
+  if (HAS_PLACE) {
+    step("s-loc", "skip", "Using the place from the link");
+    place = { lat: LAT, lon: LON, name: PARAMS.get("name") || `${LAT.toFixed(2)}, ${LON.toFixed(2)}` };
+  } else {
+    try {
+      user = (await getPosition()).coords;
+      step("s-loc", "ok", "Location found");
+      place = { lat: user.latitude, lon: user.longitude, name: "Your location" };
+    } catch (err) {
+      step("s-loc", "fail", "Location unavailable");
+      renderSearch(`Your location is not available (${err.message}). Search for a place instead.`);
+      return;
+    }
+  }
+  const [wx, R, allRules, found] = await Promise.all([
+    loadWeather(place.lat, place.lon),
     fetch(RULES_URL, { cache: "no-cache" }).then(r => { if (!r.ok) throw new Error(`${RULES_URL}: HTTP ${r.status}`); return r.json(); }),
     fetch("velominati-rules.json").then(r => r.ok ? r.json() : []).catch(() => []),
+    user ? reverseGeocode(place.lat, place.lon) : null,
   ]);
-  const data = meta.columns;
-  step("s-data", "ok", "KNMI data loaded");
-  // A single rain gauge can miss small showers: use the median of the stations within 50 km for the 6 h / 24 h totals
-  const areaRain = (i, k) => {
-    const s = meta.stations[i];
-    const v = meta.stations.map((st, j) => ({ j, d: km(s.lat, s.lon, st.lat, st.lon) })).filter(x => x.d <= 50 && data[k]?.[x.j] != null)
-      .map(x => data[k][x.j]).sort((a, b) => a - b);
-    return v.length ? Math.max(data[k][i] ?? 0, v[Math.floor(v.length / 2)]) : data[k]?.[i] ?? null;
-  };
-  // Showers are patchy and the observations are hourly: also count rain reported within 25 km (rain intensity above 0.05 mm/h, or a rain/shower present-weather code)
-  const RAIN_WW = w => w != null && ((w >= 50 && w <= 69) || (w >= 80 && w <= 99));
-  const areaRainNow = i => {
-    const s = meta.stations[i];
-    let best = 0;
-    meta.stations.forEach((st, j) => {
-      if (km(s.lat, s.lon, st.lat, st.lon) > 25) return;
-      const v = Math.max(data.rg?.[j] ?? 0, data.pg?.[j] ?? 0);
-      if (v > 0.05) best = Math.max(best, v);
-      else if (RAIN_WW(data.ww?.[j])) best = Math.max(best, 0.1);
-    });
-    return best;
-  };
-  const obs = i => {
-    const o = { ...Object.fromEntries(VARS.map(k => [k, data[k]?.[i] ?? null])), R6H: areaRain(i, "R6H"), R24H: areaRain(i, "R24H") };
-    const a = areaRainNow(i);
-    if (a > Math.max(o.rg ?? 0, o.pg ?? 0)) o.rg = a;
-    return o;
-  };
-
-  let idx = meta.stations.findIndex(s => s.name === FALLBACK), notice = "", distance = null, user = null;
-  if (idx < 0) idx = Math.max(0, meta.stations.findIndex((_, i) => data.ta?.[i] != null));
-  const wanted = STATION ? meta.stations.findIndex(s => s.name.toLowerCase() === STATION.trim().toLowerCase()) : -1;
-  if (wanted >= 0) idx = wanted;
-  else try {
-    if (STATION) notice = `Unknown station "${esc(STATION)}", showing the nearest station instead.`;
-    const { coords } = await (posP ?? makePos());
-    user = coords;
-    const ranked = meta.stations
-      .map((s, i) => ({ i, d: km(coords.latitude, coords.longitude, s.lat, s.lon) }))
-      .filter(x => data.ta?.[x.i] != null)
-      .sort((a, b) => a.d - b.d);
-    if (ranked[0] && ranked[0].d <= MAX_KM) { idx = ranked[0].i; distance = ranked[0].d; }
-    else notice = `You appear to be outside the KNMI network (nearest station: ${fmt(ranked[0]?.d)} km away), so ${FALLBACK} is shown instead.`;
-  } catch (err) {
-    notice = `Your location is not available (${esc(err.message)}), so ${FALLBACK} is shown instead.`;
-  }
-  const dist = st => user ? km(user.latitude, user.longitude, st.lat, st.lon) : 0;
-  const sorted = meta.stations.map((s, i) => ({ s, i })).sort((x, y) => user ? dist(x.s) - dist(y.s) : x.s.name.localeCompare(y.s.name));
-  const t = new Date(meta.time);
-
-  const missingAt = i => SENSORS.filter(x => x.label !== "visibility" && x.vars.every(k => data[k]?.[i] == null)).map(x => x.label);
-  const betterStation = (i, missing) => meta.stations
-    .map((st, j) => ({ j, d: km(meta.stations[i].lat, meta.stations[i].lon, st.lat, st.lon) }))
-    .filter(x => x.j !== i && x.d <= 60 && missing.every(l => !missingAt(x.j).includes(l)))
-    .sort((a, b) => a.d - b.d)[0];
-
-  const render = (idx, notice, distance) => {
-    const missing = missingAt(idx), better = missing.length ? betterStation(idx, missing) : null;
-    const sensorNote = missing.length
-      ? `No ${missing.join(", ")} data from this station right now, so the scores and advice are incomplete.` +
-        (better ? ` <a href="?station=${encodeURIComponent(meta.stations[better.j].name)}" class="goto" data-i="${better.j}">Try ${esc(meta.stations[better.j].name)}</a> (${fmt(better.d)} km away) instead.` : "")
-      : "";
-    const s = meta.stations[idx], o = obs(idx), inp = derive(o, s, new Date(), R);
+  if (found) place.name = found;
+  step("s-data", "ok", "Weather data loaded");
+  const t = wx.time;
+  const render = () => {
+    const s = { name: place.name, lat: place.lat, lon: place.lon }, o = wx.o, inp = derive(o, s, new Date(), R);
     const ride = evalRules(R.scores.ride.rules, inp, R.scores.ride.base);
     const score = Math.round(Math.max(0, Math.min(100, ride.total)));
     const cV = verdictFor(R.scores.ride.verdicts, score);
@@ -641,58 +603,10 @@ async function main() {
     document.documentElement.style.setProperty("--bg1", bg1);
     document.documentElement.style.setProperty("--bg2", bg2);
 
-    // Riding direction: the ride score per heading, adjusted for head/tailwind from the measured wind direction
-    const DIR_MAX_KM = R.ride.directionMaxKm ?? 100;
-    // Nearest station (with data) within the 45° sector around each heading
-    const bearing = (a, b) => (Math.atan2((b.lon - a.lon) * Math.cos(a.lat * Math.PI / 180), b.lat - a.lat) * 180 / Math.PI + 360) % 360;
-    const dirStation = k => meta.stations.map((st, j) => ({ j, d: km(s.lat, s.lon, st.lat, st.lon), b: bearing(s, st) }))
-      .filter(x => x.j !== idx && data.ta?.[x.j] != null && Math.abs(((x.b - k * 45 + 540) % 360) - 180) <= 22.5 && x.d <= DIR_MAX_KM)
-      .sort((p, q) => p.d - q.d)[0];
-    const DIRS = ["N", "NE", "E", "SE", "S", "SW", "W", "NW"];
-    const stationScore = j => {
-      const r = evalRules(R.scores.ride.rules, derive(obs(j), meta.stations[j], new Date(), R), R.scores.ride.base);
-      return Math.round(Math.max(0, Math.min(100, r.total)));
-    };
-    const dirScores = DIRS.map((name, k) => {
-      const ns = dirStation(k), sc = ns ? stationScore(ns.j) : 0;
-      return { name, k, sc, v: verdictFor(R.scores.ride.verdicts, sc), ns };
-    }).filter(d => d.ns);
-    const bestSc = Math.max(...dirScores.map(d => d.sc));
-    const windy = o.ff != null && o.dd != null && o.ff >= 1 && dirScores.length > 0;
-    const bestDirs = windy ? dirScores.filter(d => d.sc === bestSc) : [];
-    const worstSc = Math.min(...dirScores.map(d => d.sc));
-    const worstDirs = worstSc < bestSc ? dirScores.filter(d => d.sc === worstSc) : [];
-    const dirBlock = (() => {
-      const C = 130, RR = 96;
-      const pos = (deg, r) => [C + r * Math.sin(deg * Math.PI / 180), C - r * Math.cos(deg * Math.PI / 180)];
-      const nodes = dirScores.map(d => {
-        const [x, y] = pos(d.k * 45, RR), best = bestDirs.includes(d), worst = worstDirs.includes(d), col = worst ? "#ff4d4d" : d.v.color;
-        const ns = d.ns, nsn = meta.stations[ns.j].name;
-        return `<${ns ? `a href="?station=${encodeURIComponent(nsn)}" data-i="${ns.j}"` : "g"} class="dn${best ? " best" : ""}${ns ? " godir" : ""}"><title>${d.name}: ${nsn} (${fmt(ns.d, 0)} km) · score ${d.sc}</title>
-          <circle cx="${x}" cy="${y}" r="${best ? 27 : 24}" fill="${col}" fill-opacity="${worst ? ".38" : ".22"}" stroke="${col}" stroke-width="${best ? 3.5 : 2}"/>
-          <text x="${x}" y="${y - 2}" class="dv" fill="${col}">${d.sc}</text>
-          <text x="${x}" y="${y + 11}" class="dl">${d.name}</text></${ns ? "a" : "g"}>`;
-      }).join("");
-      let wind = "";
-      if (windy) {
-        const [x1, y1] = pos(o.dd, 134), [tx, ty] = pos(o.dd, 150 + 12 * Math.abs(Math.cos(o.dd * Math.PI / 180))), sn = Math.sin(o.dd * Math.PI / 180);
-        wind = `<g transform="translate(${x1} ${y1}) rotate(${(o.dd + 180) % 360})"><title>Wind from ${compass(o.dd)}, ${bft(o.ff)} Bft</title>
-          <path d="M0,-8 L6,6 L0,2 L-6,6 Z" fill="#9ad1ff"/></g>
-          <text x="${tx}" y="${ty}" class="wl" dominant-baseline="central" style="text-anchor:${sn > 0.3 ? "start" : sn < -0.3 ? "end" : "middle"}">${bft(o.ff)} Bft</text>`;
-      }
-      return `<div class="dirsec">
-        <div class="dirrow"><svg viewBox="-60 -40 380 340" class="compass" role="img" aria-label="Ride score per riding direction">
-          <circle cx="${C}" cy="${C}" r="${RR}" fill="none" stroke="rgba(255,255,255,.12)" stroke-dasharray="3 5"/>
-          ${nodes}${wind}
-          <circle cx="${C}" cy="${C}" r="50" fill="rgba(16,23,38,.95)" stroke="${cV.color}" stroke-width="3"/>
-          <text x="${C}" y="${C - 10}" class="cs1">${esc(s.name.length > 13 ? s.name.slice(0, 12) + "…" : s.name)}</text>
-          <text x="${C}" y="${C + 20}" class="cs2" fill="${cV.color}">${score}</text></svg>
+    const dirBlock = `<div class="dirsec"><div class="dirrow">
+        <div class="bigscore" style="color:${cV.color}" title="Ride score">${score}</div>
         ${inp.fullMoon ? `<div class="fullmoon" title="Full moon tonight">🌕</div>` : ""}
-        <div class="dirtxt"><div class="bigverdict" style="color:${cV.color}"><span>${cV.icon}</span>${esc(cV.label)}</div>
-        <div class="why">${!dirScores.length ? "No neighbouring station nearby." : worstSc === bestSc ? "Same ride score in every direction." : `Best weather towards <b>${bestDirs.map(d => d.name).join(" / ")}</b>, worst ${worstDirs.map(d => d.name).join(" / ")}.`}</div></div></div>
-
-</div>`;
-    })();
+        <div class="dirtxt"><div class="bigverdict" style="color:${cV.color}"><span>${cV.icon}</span>${esc(cV.label)}</div></div></div></div>`;
 
     inp.comfort = score;
     const quotes = (R.velominati ?? []).filter(q => test(q.when, inp));
@@ -751,8 +665,6 @@ async function main() {
     const fogRule = (hum.fog ?? []).find(x => test(x.when, inp));
     const humList = k => (hum[k] ?? []).filter(x => test(x.when, inp)).map(x => x.text);
     const alerts = [...new Set([
-      sensorNote && `⚠️ ${sensorNote}`,
-      notice && `ℹ️ ${notice}`,
       fogRule && `${fogRule.icon ?? "🌫️"} ${esc(fogRule.text)}`,
       ...warnings.map(w => `⚠️ ${esc(w)}`),
     ].filter(Boolean))];
@@ -772,9 +684,7 @@ async function main() {
     card.innerHTML = `
       <div class="head">
         <div class="place">${esc(s.name)}</div>
-        <div class="sub">${distance == null ? "KNMI station" : `${fmt(distance, distance < 10 ? 1 : 0)} km from you`}
-        <select id="pick" aria-label="Choose a station">${sorted.map(({ s: st, i }) =>
-          `<option value="${i}"${i === idx ? " selected" : ""}>${esc(st.name)}${user ? ` · ${fmt(km(user.latitude, user.longitude, st.lat, st.lon))} km` : ""}</option>`).join("")}</select></div>
+        <div class="sub">${user ? "Your location · " : ""}${place.lat.toFixed(3)}, ${place.lon.toFixed(3)}</div>
       </div>
       ${alerts.length ? `<div class="alerts">${alerts.map(a => `<div class="alert">${a}</div>`).join("")}</div>` : ""}
 
@@ -790,7 +700,7 @@ async function main() {
         ${band ? `<div class="outfit">${esc(band.label)}</div>
           <div class="items">${(band.items).map(i => `<span class="item">${iconFor(i)} ${esc(i)}</span>`).join("")}
             ${extraOnly.map(i => `<span class="item extra">${iconFor(i)} ${esc(i)}</span>`).join("")}</div>
-          ${band.note ? `<div class="why">${esc(band.note)}</div>` : ""}` : `<div class="why">No temperature data for this station.</div>`}
+          ${band.note ? `<div class="why">${esc(band.note)}</div>` : ""}` : `<div class="why">No temperature data for this location.</div>`}
         ${rj ? `<div class="row"><span class="em">${rj.icon}</span><span><b>${esc(rj.label)}</b> · ${esc(rj.text)}</span></div>` : ""}
         ${tips.map(x => `<div class="why">${x}</div>`).join("")}
       </div>
@@ -839,9 +749,9 @@ async function main() {
         </div>
       </div>
 
-      <div class="sharelink">🚴 ${SHARE_URL}<span class="when">🕒 Observed ${t.toLocaleString("en-GB", { dateStyle:"medium", timeStyle:"short" })} (local time)</span><small>Data: KNMI, CC BY 4.0 · © Bert Temme</small></div>
-      <div class="noshare" style="text-align:center"><button id="aboutbtn" type="button">ℹ️ About</button> <button id="share">📤 Share screenshot</button>${user == null ? ` <button id="retry">Use my location</button>` : ""} <a class="btnlink" href="discussion.html">💬 Discussion</a> <a class="btnlink" href="https://buymeacoffee.com/berttemme" target="_blank" rel="noopener">☕ Buy me a coffee</a></div>
-      <div class="foot noshare">${quote ? `<a href="https://www.velominati.com/the-rules/" target="_blank" rel="noopener">Rule #${quote.rule}</a> · “${esc(quote.text)}”${fullRule ? ` <button type="button" class="rulemore" id="rulemore">More</button>` : ""}<br>` : ""}Observed ${t.toLocaleString("en-GB", { dateStyle:"medium", timeStyle:"short" })} · © Bert Temme</div>`;
+      <div class="sharelink">🚴 ${SHARE_URL}<span class="when">      🕒 ${t.toLocaleString("en-GB", { dateStyle:"medium", timeStyle:"short" })} (local time)</span><small>Weather data by Open-Meteo.com (https://open-meteo.com/), CC BY 4.0 · © Bert Temme</small></div>
+            <div class="noshare" style="text-align:center"><button id="aboutbtn" type="button">ℹ️ About</button> <button id="share">📤 Share screenshot</button> <button id="place" type="button">📍 Other place</button>${user == null ? ` <button id="retry">Use my location</button>` : ""} <a class="btnlink" href="discussion.html">💬 Discussion</a> <a class="btnlink" href="https://buymeacoffee.com/berttemme" target="_blank" rel="noopener">☕ Buy me a coffee</a></div>
+      <div class="foot noshare">${quote ? `<a href="https://www.velominati.com/the-rules/" target="_blank" rel="noopener">Rule #${quote.rule}</a> · “${esc(quote.text)}”${fullRule ? ` <button type="button" class="rulemore" id="rulemore">More</button>` : ""}<br>` : ""}Weather ${t.toLocaleString("en-GB", { dateStyle:"medium", timeStyle:"short" })} · <a href="https://open-meteo.com/" target="_blank" rel="noopener">Weather data by Open-Meteo.com</a> · © Bert Temme</div>`;
 
     const calcDlg = document.getElementById("calcslot");
     calcDlg.replaceChildren(card.querySelector("#calcwrap"));
@@ -867,8 +777,8 @@ async function main() {
         });
         const blob = await new Promise(r => canvas.toBlob(r, "image/png"));
         const file = new File([blob], `cycling-${s.name.replace(/\W+/g, "-").toLowerCase()}.png`, { type: "image/png" });
-        const link = `${SHARE_URL}?station=${encodeURIComponent(s.name)}`;
-        const text = `Cycling weather at ${s.name}: ${link}`;
+        const link = HAS_PLACE ? PLACE_URL(place.lat, place.lon, PARAMS.get("name")) : SHARE_URL;
+        const text = `Cycling weather${HAS_PLACE ? ` at ${place.name}` : ""}: ${link}`;
         if (navigator.canShare?.({ files: [file] })) await navigator.share({ files: [file], text });
         else {
           const a = document.createElement("a"); a.href = URL.createObjectURL(file); a.download = file.name; a.click();
@@ -880,20 +790,13 @@ async function main() {
       } finally { btn.disabled = false; btn.textContent = label; }
     });
     document.getElementById("retry")?.addEventListener("click", () => {
-      const u = new URL(location.href); u.searchParams.delete("station"); location.href = u;
+      const u = new URL(location.href); u.searchParams.delete("lat"); u.searchParams.delete("lon"); u.searchParams.delete("name"); location.href = u;
     });
-    const show = i => {
-      const u = new URL(location.href); u.searchParams.set("station", meta.stations[i].name);
-      history.replaceState(null, "", u);
-      render(i, "", user ? km(user.latitude, user.longitude, meta.stations[i].lat, meta.stations[i].lon) : null);
-    };
-    document.getElementById("pick").addEventListener("change", e => show(+e.target.value));
-    document.querySelectorAll(".godir").forEach(a => a.addEventListener("click", e => { e.preventDefault(); show(+a.dataset.i); }));
-document.querySelector(".goto")?.addEventListener("click", e => { e.preventDefault(); show(+e.target.dataset.i); });
+    document.getElementById("place").addEventListener("click", () => renderSearch(""));
   };
   step("s-calc", "run");
   await new Promise(r => requestAnimationFrame(() => setTimeout(r, 0)));
-  render(idx, notice, distance);
+  render();
 }
 
 main().catch(err => { card.innerHTML = `<div class="head"><div class="sub">Loading failed: ${esc(err.message)}</div></div>`; });
