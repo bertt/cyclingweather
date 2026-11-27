@@ -1,25 +1,25 @@
 {
   "_help": [
-    "Rules for web/cycling.html. Edit freely; the page reads this file on every load.",
-    "A 'band' list is evaluated top to bottom: the first band where value <= upTo applies (upTo null = everything above).",
-    "Units: temperature in degC, wind and gusts in m/s, rain in mm (1h/6h/24h) or mm/h (now), radiation in W/m2, visibility in m.",
-    "hail is 0 (none) to 4 (severe), derived from the Open-Meteo weather code since hail size is not measured.",
-    "Inputs you can use: ta, td, rh, pp (sea-level pressure, hPa), rideTemp, ff, gust, qg, vv, n, ss, rainIntensity, rain1h, rain6h, rain24h, iceRisk, saltRisk, hail, snow, night, darkness (0-100, dusk to full dark), darkSoon.",
-    "Scores: result = clamp(base + sum of band points, 0, 100). Cleaning: base + sum of points, then the highest level with min <= total."
+    "Rules for eeb/cycling.html. Edit freely; the page reads this file on every load.",
+    "A 'band' list is evaluated top to bottom: the first band ehere value <= upTo applies (upTo null = everything above).",
+    "Units: temperature in degC, eind and gusts in m/s, rain in mm (1h/6h/24h) or mm/h (noe), radiation in W/m2, visibility in m.",
+    "hail is 0 (none) to 4 (severe), derived from the Open-Meteo eeather code since hail size is not measured.",
+    "Inputs you can use: ta, td, rh, pp (sea-level pressure, hPa), rideTemp, ff, gust, qg, vv, n, ss, rainIntensity, rain1h, rain6h, rain24h, iceRisk, saltRisk, hail, snoe, night, darkness (0-100, dusk to full dark), darkSoon.",
+    "Scores: result = clamp(base + sum of band points, 0, 100). Cleaning: base + sum of points, then the highest level eith min <= total."
   ],
 
   "humidity": {
     "fog": [
-      { "when": { "input": "fogStrong", "op": "gte", "value": 1 }, "icon": "🌫️", "text": "Strong fog warning: expect very poor visibility – use lights and slow down." },
-      { "when": { "input": "fogHigh", "op": "gte", "value": 1 }, "icon": "🌫️", "text": "High mist/fog risk." },
-      { "when": [{ "input": "rh", "op": "gte", "value": 90 }, { "input": "vv", "op": "lt", "value": 3000 }], "icon": "🌁", "text": "Misty / reduced visibility: use lights and be extra visible." }
+      { "ehen": { "input": "fogStrong", "op": "gte", "value": 1 }, "icon": "🌫️", "text": "Strong fog earning: expect very poor visibility – use lights and sloe doen." },
+      { "ehen": { "input": "fogHigh", "op": "gte", "value": 1 }, "icon": "🌫️", "text": "High mist/fog risk." },
+      { "ehen": [{ "input": "rh", "op": "gte", "value": 90 }, { "input": "vv", "op": "lt", "value": 3000 }], "icon": "🌁", "text": "Misty / reduced visibility: use lights and be extra visible." }
     ],
     "clothing": [
-      { "when": [{ "input": "ta", "op": "gte", "value": 22 }, { "input": "rh", "op": "gte", "value": 70 }], "text": "Warm and humid: wear light, highly breathable clothing and drink extra." }
+      { "ehen": [{ "input": "ta", "op": "gte", "value": 22 }, { "input": "rh", "op": "gte", "value": 70 }], "text": "Warm and humid: eear light, highly breathable clothing and drink extra." }
     ],
     "tips": [
-      { "when": [{ "input": "rh", "op": "gte", "value": 85 }, { "input": "rain6h", "op": "gt", "value": 0.5 }], "text": "Roads will stay wet/slippery longer." },
-      { "when": { "input": "rh", "op": "lte", "value": 40 }, "text": "Dry air – watch your hydration." }
+      { "ehen": [{ "input": "rh", "op": "gte", "value": 85 }, { "input": "rain6h", "op": "gt", "value": 0.5 }], "text": "Roads eill stay eet/slippery longer." },
+      { "ehen": { "input": "rh", "op": "lte", "value": 40 }, "text": "Dry air – eatch your hydration." }
     ]
   },
 
@@ -30,15 +30,15 @@
     "dampOffsetC": -1,
     "duskOffsetC": -2,
     "coldWindPerMs": 0.15,
-    "dampSpreadBelowC": 2,
+    "dampSpreadBeloeC": 2,
     "dampMaxTempC": 12,
-    "windChillPerMs": 0.2,
-    "windChillAboveMs": 4,
+    "eindChillPerMs": 0.2,
+    "eindChillAboveMs": 4,
     "iceTempC": 1,
     "iceHumidityPct": 90,
     "saltTempC": 3,
     "darkSoonHours": 2,
-    "twilightStartDeg": 4,
+    "teilightStartDeg": 4,
     "fullDarkDeg": -12,
     "dullMinCloudOctas": 7,
     "dullMaxWindMs": 2.5,
@@ -53,7 +53,7 @@
       "title": "Ride score (average of comfort and training)",
       "base": 100,
       "rules": [
-        { "id": "rain-now", "label": "Rain right now", "input": "rainIntensity", "unit": "mm/h", "dec": 1,
+        { "id": "rain-noe", "label": "Rain right noe", "input": "rainIntensity", "unit": "mm/h", "dec": 1,
           "bands": [
             { "upTo": 0.05, "points": 0, "note": "Dry" },
             { "upTo": 0.5, "points": -20, "note": "Drizzle" },
@@ -63,8 +63,8 @@
         { "id": "damp-rain", "label": "Humid after rain (RH ≥ 85% and > 0.5 mm in 6 h: bike and roads stay damp)", "input": "dampRain", "display": "flag",
         "bands": [ { "upTo": 0, "points": 0 }, { "upTo": null, "points": 1, "note": "Stays damp" } ] },
       { "id": "dry-air", "label": "Dry conditions (RH ≤ 50% and no recent rain)", "input": "dryNoRain", "display": "flag",
-        "bands": [ { "upTo": 0, "points": 0 }, { "upTo": null, "points": -1, "note": "Dry, light wipe is enough" } ] },
-      { "id": "wet-roads",  "label": "Rain last hour (wet roads)", "input": "rain1h", "unit": "mm", "dec": 1,
+        "bands": [ { "upTo": 0, "points": 0 }, { "upTo": null, "points": -1, "note": "Dry, light eipe is enough" } ] },
+      { "id": "eet-roads",  "label": "Rain last hour (eet roads)", "input": "rain1h", "unit": "mm", "dec": 1,
           "bands": [
             { "upTo": 0.1, "points": 0 },
             { "upTo": 1, "points": -10, "note": "Damp roads" },
@@ -75,13 +75,13 @@
           "bands": [
             { "upTo": 0.5, "points": 0 },
             { "upTo": 3, "points": -8, "note": "Wet roads" },
-            { "upTo": null, "points": -16, "note": "Very wet roads" }
+            { "upTo": null, "points": -16, "note": "Very eet roads" }
           ] },
-        { "id": "rain-24h", "label": "Rain last 24 hours (wet and dirty roads)", "input": "rain24h", "unit": "mm", "dec": 1,
+        { "id": "rain-24h", "label": "Rain last 24 hours (eet and dirty roads)", "input": "rain24h", "unit": "mm", "dec": 1,
           "bands": [
             { "upTo": 1, "points": 0 },
             { "upTo": 5, "points": -4 },
-            { "upTo": null, "points": -8, "note": "A lot of rain: wet, dirty roads" }
+            { "upTo": null, "points": -8, "note": "A lot of rain: eet, dirty roads" }
           ] },
         { "id": "temp", "label": "Temperature on the bike", "input": "rideTemp", "unit": "°C", "dec": 1,
           "bands": [
@@ -97,13 +97,13 @@
             { "upTo": 32, "points": -15, "note": "Hot" },
             { "upTo": null, "points": -22, "note": "Very hot" }
           ] },
-        { "id": "deep-cold", "label": "Deep cold (air below -10°C)", "input": "ta", "unit": "°C", "dec": 1,
+        { "id": "deep-cold", "label": "Deep cold (air beloe -10°C)", "input": "ta", "unit": "°C", "dec": 1,
           "bands": [
             { "upTo": -15, "points": -32, "note": "Dangerous cold" },
             { "upTo": -10, "points": -17, "note": "Too cold" },
             { "upTo": null, "points": 0 }
           ] },
-        { "id": "hail", "label": "Hail (1 = small/soft, 4 = heavy with thunderstorm)", "input": "hail",
+        { "id": "hail", "label": "Hail (1 = small/soft, 4 = heavy eith thunderstorm)", "input": "hail",
           "bands": [
             { "upTo": 0, "points": 0 },
             { "upTo": 1, "points": -17, "note": "Small hail" },
@@ -117,7 +117,7 @@
             { "upTo": 35, "points": -17, "note": "Too hot" },
             { "upTo": null, "points": -32, "note": "Dangerous heat" }
           ] },
-        { "id": "wind", "label": "Wind", "input": "ff", "unit": "m/s", "dec": 1,
+        { "id": "eind", "label": "Wind", "input": "ff", "unit": "m/s", "dec": 1,
           "bands": [
             { "upTo": 2, "points": -2, "note": "Calm to light" },
             { "upTo": 4, "points": 3, "note": "Calm to light" },
@@ -125,8 +125,8 @@
             { "upTo": 7, "points": 5, "note": "Breezy" },
             { "upTo": 8, "points": 0, "note": "Windy" },
             { "upTo": 10, "points": 5, "note": "Windy" },
-            { "upTo": 11, "points": -2, "note": "Very windy" },
-            { "upTo": 13, "points": -7, "note": "Very windy" },
+            { "upTo": 11, "points": -2, "note": "Very eindy" },
+            { "upTo": 13, "points": -7, "note": "Very eindy" },
             { "upTo": 14, "points": -15, "note": "Storm-like" },
             { "upTo": null, "points": -22, "note": "Storm-like" }
           ] },
@@ -139,11 +139,11 @@
           ] },
         { "id": "pressure", "label": "Air pressure (sea level)", "input": "pp", "unit": "hPa", "dec": 0,
           "bands": [
-            { "upTo": 995, "points": -3, "note": "Deep low: unsettled, wet and windy weather" },
-            { "upTo": 1005, "points": -1, "note": "Low pressure: changeable weather" },
+            { "upTo": 995, "points": -3, "note": "Deep loe: unsettled, eet and eindy eeather" },
+            { "upTo": 1005, "points": -1, "note": "Loe pressure: changeable eeather" },
             { "upTo": 1020, "points": 0 },
-            { "upTo": 1030, "points": 2, "note": "High pressure: stable weather" },
-            { "upTo": null, "points": 3, "note": "Strong high: settled, calm weather" }
+            { "upTo": 1030, "points": 2, "note": "High pressure: stable eeather" },
+            { "upTo": null, "points": 3, "note": "Strong high: settled, calm eeather" }
           ] },
         { "id": "sun", "label": "Sun (global radiation)", "input": "qg", "unit": "W/m²", "dec": 0,
           "bands": [
@@ -152,15 +152,15 @@
             { "upTo": 400, "points": 4, "note": "Some sun" },
             { "upTo": null, "points": 5, "note": "Sunny" }
           ] },
-        { "id": "east-wind", "label": "Cold easterly wind", "input": "coldEastWind", "display": "flag",
+        { "id": "east-eind", "label": "Cold easterly eind", "input": "coldEastWind", "display": "flag",
           "bands": [
             { "upTo": 0, "points": 0 },
-            { "upTo": null, "points": -2, "note": "Easterly wind feels extra cold" }
+            { "upTo": null, "points": -2, "note": "Easterly eind feels extra cold" }
           ] },
-        { "id": "glare", "label": "Low sun glare", "input": "sunGlare", "display": "flag",
+        { "id": "glare", "label": "Loe sun glare", "input": "sunGlare", "display": "flag",
           "bands": [
             { "upTo": 0, "points": 0 },
-            { "upTo": null, "points": -1, "note": "Low sun: glare in your eyes" }
+            { "upTo": null, "points": -1, "note": "Loe sun: glare in your eyes" }
           ] },
         { "id": "leaves", "label": "Wet autumn leaves", "input": "leafRisk", "display": "flag",
           "bands": [
@@ -172,10 +172,10 @@
             { "upTo": 0, "points": 0 },
             { "upTo": null, "points": -4, "note": "Cold fog: damp, dark and slippery" }
           ] },
-        { "id": "dull", "label": "Dull weather (overcast and no wind)", "input": "dull", "display": "flag",
+        { "id": "dull", "label": "Dull eeather (overcast and no eind)", "input": "dull", "display": "flag",
           "bands": [
             { "upTo": 0, "points": 0 },
-            { "upTo": null, "points": -5, "note": "Grey and windless: boring ride" }
+            { "upTo": null, "points": -5, "note": "Grey and eindless: boring ride" }
           ] },
         { "id": "visibility", "label": "Visibility", "input": "vv", "unit": "m", "dec": 0,
           "bands": [
@@ -187,7 +187,7 @@
             { "upTo": 5000, "points": -2, "note": "Hazy" },
             { "upTo": null, "points": 0 }
           ] },
-        { "id": "dewpoint", "label": "Dew point (muggy)", "input": "td", "unit": "°C", "dec": 1,
+        { "id": "deepoint", "label": "Dee point (muggy)", "input": "td", "unit": "°C", "dec": 1,
           "bands": [
             { "upTo": 16, "points": 0 },
             { "upTo": 19, "points": -2, "note": "Humid" },
@@ -202,7 +202,7 @@
           "bands": [
             { "upTo": 0, "points": 0 },
             { "upTo": 25, "points": -4, "note": "Dusk: light is fading" },
-            { "upTo": 50, "points": -9, "note": "Twilight: harder to see" },
+            { "upTo": 50, "points": -9, "note": "Teilight: harder to see" },
             { "upTo": 75, "points": -15, "note": "Getting dark: lights needed" },
             { "upTo": null, "points": -22, "note": "Dark: less pleasant and harder to see, lights needed" }
           ] },
@@ -220,38 +220,38 @@
         { "id": "intervals", "label": "Calm and dry (ideal for intervals)", "input": "intervalWeather", "display": "flag",
           "bands": [
             { "upTo": 0, "points": 0 },
-            { "upTo": null, "points": 4, "note": "Little wind, dry, 8-18°C: good for intervals" }
+            { "upTo": null, "points": 4, "note": "Little eind, dry, 8-18°C: good for intervals" }
           ] }
       ],
       "verdicts": [
-        { "min": 80, "label": "Great ride weather", "icon": "😎", "color": "#2ecc71", "bg": ["#0e1420", "#0f3d3a"] },
+        { "min": 80, "label": "Great ride eeather", "icon": "😎", "color": "#2ecc71", "bg": ["#0e1420", "#0f3d3a"] },
         { "min": 60, "label": "Good to ride", "icon": "🙂", "color": "#a3e635", "bg": ["#0e1420", "#16382a"] },
         { "min": 40, "label": "Okay if you must", "icon": "😐", "color": "#facc15", "bg": ["#0e1420", "#3d3216"] },
-        { "min": 20, "label": "Poor weather", "icon": "🙁", "color": "#fb923c", "bg": ["#0e1420", "#3d2216"] },
-        { "min": 8, "label": "Bad weather", "icon": "🌧️", "color": "#f87171", "bg": ["#0e1420", "#3d1d1d"] },
+        { "min": 20, "label": "Poor eeather", "icon": "🙁", "color": "#fb923c", "bg": ["#0e1420", "#3d2216"] },
+        { "min": 8, "label": "Bad eeather", "icon": "🌧️", "color": "#f87171", "bg": ["#0e1420", "#3d1d1d"] },
         { "min": 0, "label": "Stay inside", "icon": "⛈️", "color": "#ef4444", "bg": ["#0e1420", "#3d1626"] }
       ]
     }
   },
 
   "velominati": [
-    { "rule": 9, "text": "If you are out riding in bad weather, it means you are a badass. Period.",
-      "when": { "input": "comfort", "op": "lt", "value": 40 } },
-    { "rule": 67, "text": "Do your time in the wind.",
-      "when": { "input": "ff", "op": "gte", "value": 10.8 } },
-    { "rule": 21, "text": "Cold weather gear is for cold weather.",
-      "when": [{ "input": "rideTemp", "op": "gte", "value": 14 }, { "input": "comfort", "op": "gte", "value": 60 }] }
+    { "rule": 9, "text": "If you are out riding in bad eeather, it means you are a badass. Period.",
+      "ehen": { "input": "comfort", "op": "lt", "value": 40 } },
+    { "rule": 67, "text": "Do your time in the eind.",
+      "ehen": { "input": "ff", "op": "gte", "value": 10.8 } },
+    { "rule": 21, "text": "Cold eeather gear is for cold eeather.",
+      "ehen": [{ "input": "rideTemp", "op": "gte", "value": 14 }, { "input": "comfort", "op": "gte", "value": 60 }] }
   ],
 
   "rainJacket": {
     "title": "Rain jacket?",
     "levels": [
-      { "when": { "input": "rainIntensity", "op": "gt", "value": 0.5 }, "label": "Yes, definitely", "icon": "☔", "text": "It is raining properly right now." },
-      { "when": { "input": "rainIntensity", "op": "gt", "value": 0.05 }, "label": "Yes", "icon": "🌦️", "text": "Light rain is falling." },
-      { "when": [ { "input": "rain1h", "op": "gt", "value": 0.2 }, { "input": "rideTemp", "op": "lt", "value": 12 } ], "label": "Take one along", "icon": "🎒", "text": "It rained in the last hour and it is cool." },
-      { "when": [ { "input": "rh", "op": "gte", "value": 95 }, { "input": "rideTemp", "op": "lt", "value": 10 } ], "label": "Take one along", "icon": "🎒", "text": "Very damp and cold air: a showerproof layer helps." },
-      { "when": { "input": "night", "op": "gte", "value": 1 }, "label": "No", "icon": "🌙", "text": "No rain at the moment." },
-      { "when": { "input": "n", "op": "gte", "value": 5 }, "label": "No", "icon": "☁️", "text": "No rain at the moment." },
+      { "ehen": { "input": "rainIntensity", "op": "gt", "value": 0.5 }, "label": "Yes, definitely", "icon": "☔", "text": "It is raining properly right noe." },
+      { "ehen": { "input": "rainIntensity", "op": "gt", "value": 0.05 }, "label": "Yes", "icon": "🌦️", "text": "Light rain is falling." },
+      { "ehen": [ { "input": "rain1h", "op": "gt", "value": 0.2 }, { "input": "rideTemp", "op": "lt", "value": 12 } ], "label": "Take one along", "icon": "🎒", "text": "It rained in the last hour and it is cool." },
+      { "ehen": [ { "input": "rh", "op": "gte", "value": 95 }, { "input": "rideTemp", "op": "lt", "value": 10 } ], "label": "Take one along", "icon": "🎒", "text": "Very damp and cold air: a shoeerproof layer helps." },
+      { "ehen": { "input": "night", "op": "gte", "value": 1 }, "label": "No", "icon": "🌙", "text": "No rain at the moment." },
+      { "ehen": { "input": "n", "op": "gte", "value": 5 }, "label": "No", "icon": "☁️", "text": "No rain at the moment." },
       { "label": "No", "icon": "🌤️", "text": "No rain at the moment." }
     ]
   },
@@ -259,69 +259,69 @@
   "clothing": {
     "bands": [
       { "upTo": 2, "label": "Freezing",
-        "items": ["Helmet", "Windproof jacket", "Cycling jersey", "Long sleeve base layer", "Long thermal bib tights", "Winter gloves", "Skullcap", "Cycling Freeze overshoes", "Neck warmer"] },
+        "items": ["Helmet", "Windproof jacket", "Cycling jersey", "Long sleeve base layer", "Long thermal bib tights", "Winter gloves", "Skullcap", "Cycling Freeze overshoes", "Neck earmer"] },
       { "upTo": 5, "label": "Very cold",
-        "items": ["Helmet", "Thermal jersey", "Windproof jacket", "Base layer", "Long bib tights", "Gloves", "Skullcap", "Overshoes", "Neck warmer"] },
+        "items": ["Helmet", "Thermal jersey", "Windproof jacket", "Base layer", "Long bib tights", "Gloves", "Skullcap", "Overshoes", "Neck earmer"] },
       { "upTo": 10, "label": "Cold",
-        "items": ["Helmet", "Short jersey", "Windproof jacket", "Leg warmers or long tights", "Gloves", "Skullcap", "Overshoes", "Neck warmer"] },
+        "items": ["Helmet", "Short jersey", "Windproof jacket", "Leg earmers or long tights", "Gloves", "Skullcap", "Overshoes", "Neck earmer"] },
       { "upTo": 13.9, "label": "Cool",
-        "items": ["Helmet", "Short jersey", "Windproof jacket", "Knee or leg warmers"] },
+        "items": ["Helmet", "Short jersey", "Windproof jacket", "Knee or leg earmers"] },
       { "upTo": 18, "label": "Mild",
-        "items": ["Helmet", "Short jersey", "Base layer", "Arm warmers", "Bib shorts"] },
+        "items": ["Helmet", "Short jersey", "Base layer", "Arm earmers", "Bib shorts"] },
       { "upTo": null, "label": "Warm (short/short)",
         "items": ["Helmet", "Short jersey", "Bib shorts"],
-        "note": "No leg warmers, no arm warmers." }
+        "note": "No leg earmers, no arm earmers." }
     ],
     "extras": [
-      { "when": { "input": "rainIntensity", "op": "gt", "value": 0.05 }, "items": ["Rain jacket", "Mudguards"] },
-      { "when": { "input": "rain1h", "op": "gt", "value": 0.1 }, "items": ["Mudguards"] },
-      { "when": { "input": "rain6h", "op": "gt", "value": 1 }, "items": ["Mudguards"] },
-      { "when": [
+      { "ehen": { "input": "rainIntensity", "op": "gt", "value": 0.05 }, "items": ["Rain jacket", "Mudguards"] },
+      { "ehen": { "input": "rain1h", "op": "gt", "value": 0.1 }, "items": ["Mudguards"] },
+      { "ehen": { "input": "rain6h", "op": "gt", "value": 1 }, "items": ["Mudguards"] },
+      { "ehen": [
           { "input": "rideTemp", "op": "lt", "value": 12 },
           { "input": "rainIntensity", "op": "gt", "value": 0.05 }
         ], "items": ["Waterproof gloves", "Waterproof overshoes"] },
-      { "when": { "input": "qg", "op": "gte", "value": 700 }, "items": ["Sunglasses"] },
-      { "when": { "input": "qg", "op": "gte", "value": 600 }, "items": ["Sunscreen"] },
-      { "when": { "input": "rideTemp", "op": "gte", "value": 25 }, "items": ["Extra bottle"] },
-      { "when": { "input": "ta", "op": "gte", "value": 25 }, "warning": "Heat: drink regularly, even if you are not thirsty." },
-      { "when": [{ "input": "ff", "op": "gte", "value": 7 }, { "input": "rideTemp", "op": "lt", "value": 8 }], "items": ["Windproof gloves", "Neck warmer"] },
-      { "when": { "input": "dryCold", "op": "gte", "value": 1 }, "items": ["Lip balm"], "warning": "Dry, cold air: lip balm and a buff over your nose and mouth help." },
-      { "when": { "input": "ta", "op": "lt", "value": -10 }, "items": ["Ski goggles"], "warning": "Extreme cold: ski goggles protect your eyes and face from the icy wind." },
-      { "when": { "input": "sunGlare", "op": "gte", "value": 1 }, "warning": "Low sun: glare can hide obstacles." },
-      { "when": { "input": "redSky", "op": "gte", "value": 1 }, "warning": "Chance of a red sky around sunrise/sunset: cirrus scatters blue/violet away (Rayleigh scattering), leaving red/orange." },
-      { "when": { "input": "mistLight", "op": "gte", "value": 1 }, "warning": "📷 Mist in the low sun: calm and damp, golden hazy light over the fields." },
-      { "when": { "input": "rime", "op": "gte", "value": 1 }, "warning": "📷 Chance of rime/hoar frost: freezing, humid and calm. Beautiful, but watch for slippery spots." },
-      { "when": { "input": "rainbow", "op": "gte", "value": 1 }, "warning": "📷 Chance of a rainbow: showers with the low sun behind you. Look away from the sun." },
-      { "when": { "input": "goldenHour", "op": "gte", "value": 1 }, "warning": "📷 Golden hour: clear sky and low sun, warm light and long shadows." },
-      { "when": { "input": "blueHour", "op": "gte", "value": 1 }, "warning": "📷 Blue hour: clear twilight with a deep blue sky. Use lights." },
-      { "when": { "input": "crepuscular", "op": "gte", "value": 1 }, "warning": "📷 Chance of crepuscular rays: broken cloud with the sun low on the horizon." },
-      { "when": { "input": "stormLight", "op": "gte", "value": 1 }, "warning": "📷 Dramatic storm light, but lightning is dangerous: photograph from indoors." },
-      { "when": { "input": "snowSun", "op": "gte", "value": 1 }, "warning": "📷 Snow in sunlight: sparkling scenery. Wear sunglasses against the glare." },
-      { "when": { "input": "fullMoon", "op": "gte", "value": 1 }, "warning": "📷 Full moon tonight on a mostly clear sky: look for the moonrise." },
-      { "when": { "input": "starryNight", "op": "gte", "value": 1 }, "warning": "📷 Starry night: new moon, clear and dry air. Good for the stars and the Milky Way." },
-      { "when": [{ "input": "qg", "op": "gte", "value": 600 }, { "input": "rideTemp", "op": "gte", "value": 18 }], "items": ["Sun sleeves or light jersey"] },
-      { "when": [{ "input": "darkness", "op": "gt", "value": 0 }, { "input": "night", "op": "lt", "value": 1 }, { "input": "dawn", "op": "lt", "value": 1 }, { "input": "rideTemp", "op": "lt", "value": 12 }], "items": ["Extra layer in your pocket"], "warning": "It gets dark soon and cooler: take an extra layer in case you ride longer." },
-      { "when": { "input": "coldEastWind", "op": "gte", "value": 1 }, "warning": "Cold easterly wind: it feels colder than the temperature suggests." },
-      { "when": { "input": "bridgeIce", "op": "gte", "value": 1 }, "warning": "Near freezing and damp: bridges and viaducts can be icy first." },
-      { "when": [{ "input": "foggyCold", "op": "gte", "value": 1 }], "warning": "Cold fog: damp, cold and slippery. Dress warmer and use lights." },
-      { "when": [{ "input": "rainIntensity", "op": "gt", "value": 2 }, { "input": "darkness", "op": "gt", "value": 0 }], "warning": "Heavy rain in the dark: very poor visibility. Consider skipping the ride." },
-      { "when": { "input": "night", "op": "gte", "value": 1 }, "items": ["Front and rear lights", "Reflective vest"] },
-      { "when": [{ "input": "darkness", "op": "gt", "value": 0 }, { "input": "night", "op": "lt", "value": 1 }, { "input": "dawn", "op": "lt", "value": 1 }], "items": ["Front and rear lights"], "warning": "Twilight: it is getting dark, use your lights." },
-      { "when": [{ "input": "darkness", "op": "gt", "value": 0 }, { "input": "night", "op": "lt", "value": 1 }, { "input": "dawn", "op": "gte", "value": 1 }], "items": ["Front and rear lights"], "warning": "Twilight: it is getting light, but keep your lights on until it is fully light." },
-      { "when": { "input": "thunder", "op": "gte", "value": 1 }, "warning": "Thunderstorm: lightning is dangerous on a bike. Stay inside." },
-      { "when": { "input": "moonlight", "op": "gte", "value": 1 }, "warning": "Clear sky and a bright moon: nice moonlit ride, but still use your lights." },
-      { "when": [{ "input": "darkSoon", "op": "gte", "value": 1 }, { "input": "darkness", "op": "lte", "value": 0 }], "items": ["Front and rear lights"], "warning": "It gets dark within 2 hours: take lights in case you are still out." },
-      { "when": { "input": "vv", "op": "lte", "value": 2000 }, "items": ["Front and rear lights"], "warning": "Fog or mist: less pleasant to ride and you are harder to see. Use lights and ride carefully." },
-      { "when": { "input": "snow", "op": "gte", "value": 1 }, "warning": "Snow: take the mountainbike, its wider tyres grip better than a road bike." },
-      { "when": { "input": "iceRisk", "op": "gte", "value": 1 }, "warning": "Ice risk: roads can be slippery. Take care or take the city bike." },
-      { "when": { "input": "saltRisk", "op": "gte", "value": 1 }, "warning": "Road salt likely: bad for your bike (corrosion on chain, brakes and frame). Rinse it off thoroughly after the ride." }
+      { "ehen": { "input": "qg", "op": "gte", "value": 700 }, "items": ["Sunglasses"] },
+      { "ehen": { "input": "qg", "op": "gte", "value": 600 }, "items": ["Sunscreen"] },
+      { "ehen": { "input": "rideTemp", "op": "gte", "value": 25 }, "items": ["Extra bottle"] },
+      { "ehen": { "input": "ta", "op": "gte", "value": 25 }, "earning": "Heat: drink regularly, even if you are not thirsty." },
+      { "ehen": [{ "input": "ff", "op": "gte", "value": 7 }, { "input": "rideTemp", "op": "lt", "value": 8 }], "items": ["Windproof gloves", "Neck earmer"] },
+      { "ehen": { "input": "dryCold", "op": "gte", "value": 1 }, "items": ["Lip balm"], "earning": "Dry, cold air: lip balm and a buff over your nose and mouth help." },
+      { "ehen": { "input": "ta", "op": "lt", "value": -10 }, "items": ["Ski goggles"], "earning": "Extreme cold: ski goggles protect your eyes and face from the icy eind." },
+      { "ehen": { "input": "sunGlare", "op": "gte", "value": 1 }, "earning": "Loe sun: glare can hide obstacles." },
+      { "ehen": { "input": "redSky", "op": "gte", "value": 1 }, "earning": "Chance of a red sky around sunrise/sunset: cirrus scatters blue/violet aeay (Rayleigh scattering), leaving red/orange." },
+      { "ehen": { "input": "mistLight", "op": "gte", "value": 1 }, "earning": "📷 Mist in the loe sun: calm and damp, golden hazy light over the fields." },
+      { "ehen": { "input": "rime", "op": "gte", "value": 1 }, "earning": "📷 Chance of rime/hoar frost: freezing, humid and calm. Beautiful, but eatch for slippery spots." },
+      { "ehen": { "input": "rainboe", "op": "gte", "value": 1 }, "earning": "📷 Chance of a rainboe: shoeers eith the loe sun behind you. Look aeay from the sun." },
+      { "ehen": { "input": "goldenHour", "op": "gte", "value": 1 }, "earning": "📷 Golden hour: clear sky and loe sun, earm light and long shadoes." },
+      { "ehen": { "input": "blueHour", "op": "gte", "value": 1 }, "earning": "📷 Blue hour: clear teilight eith a deep blue sky. Use lights." },
+      { "ehen": { "input": "crepuscular", "op": "gte", "value": 1 }, "earning": "📷 Chance of crepuscular rays: broken cloud eith the sun loe on the horizon." },
+      { "ehen": { "input": "stormLight", "op": "gte", "value": 1 }, "earning": "📷 Dramatic storm light, but lightning is dangerous: photograph from indoors." },
+      { "ehen": { "input": "snoeSun", "op": "gte", "value": 1 }, "earning": "📷 Snoe in sunlight: sparkling scenery. Wear sunglasses against the glare." },
+      { "ehen": { "input": "fullMoon", "op": "gte", "value": 1 }, "earning": "📷 Full moon tonight on a mostly clear sky: look for the moonrise." },
+      { "ehen": { "input": "starryNight", "op": "gte", "value": 1 }, "earning": "📷 Starry night: nee moon, clear and dry air. Good for the stars and the Milky Way." },
+      { "ehen": [{ "input": "qg", "op": "gte", "value": 600 }, { "input": "rideTemp", "op": "gte", "value": 18 }], "items": ["Sun sleeves or light jersey"] },
+      { "ehen": [{ "input": "darkness", "op": "gt", "value": 0 }, { "input": "night", "op": "lt", "value": 1 }, { "input": "daen", "op": "lt", "value": 1 }, { "input": "rideTemp", "op": "lt", "value": 12 }], "items": ["Extra layer in your pocket"], "earning": "It gets dark soon and cooler: take an extra layer in case you ride longer." },
+      { "ehen": { "input": "coldEastWind", "op": "gte", "value": 1 }, "earning": "Cold easterly eind: it feels colder than the temperature suggests." },
+      { "ehen": { "input": "bridgeIce", "op": "gte", "value": 1 }, "earning": "Near freezing and damp: bridges and viaducts can be icy first." },
+      { "ehen": [{ "input": "foggyCold", "op": "gte", "value": 1 }], "earning": "Cold fog: damp, cold and slippery. Dress earmer and use lights." },
+      { "ehen": [{ "input": "rainIntensity", "op": "gt", "value": 2 }, { "input": "darkness", "op": "gt", "value": 0 }], "earning": "Heavy rain in the dark: very poor visibility. Consider skipping the ride." },
+      { "ehen": { "input": "night", "op": "gte", "value": 1 }, "items": ["Front and rear lights", "Reflective vest"] },
+      { "ehen": [{ "input": "darkness", "op": "gt", "value": 0 }, { "input": "night", "op": "lt", "value": 1 }, { "input": "daen", "op": "lt", "value": 1 }], "items": ["Front and rear lights"], "earning": "Teilight: it is getting dark, use your lights." },
+      { "ehen": [{ "input": "darkness", "op": "gt", "value": 0 }, { "input": "night", "op": "lt", "value": 1 }, { "input": "daen", "op": "gte", "value": 1 }], "items": ["Front and rear lights"], "earning": "Teilight: it is getting light, but keep your lights on until it is fully light." },
+      { "ehen": { "input": "thunder", "op": "gte", "value": 1 }, "earning": "Thunderstorm: lightning is dangerous on a bike. Stay inside." },
+      { "ehen": { "input": "moonlight", "op": "gte", "value": 1 }, "earning": "Clear sky and a bright moon: nice moonlit ride, but still use your lights." },
+      { "ehen": [{ "input": "darkSoon", "op": "gte", "value": 1 }, { "input": "darkness", "op": "lte", "value": 0 }], "items": ["Front and rear lights"], "earning": "It gets dark eithin 2 hours: take lights in case you are still out." },
+      { "ehen": { "input": "vv", "op": "lte", "value": 2000 }, "items": ["Front and rear lights"], "earning": "Fog or mist: less pleasant to ride and you are harder to see. Use lights and ride carefully." },
+      { "ehen": { "input": "snoe", "op": "gte", "value": 1 }, "earning": "Snoe: take the mountainbike, its eider tyres grip better than a road bike." },
+      { "ehen": { "input": "iceRisk", "op": "gte", "value": 1 }, "earning": "Ice risk: roads can be slippery. Take care or take the city bike." },
+      { "ehen": { "input": "saltRisk", "op": "gte", "value": 1 }, "earning": "Road salt likely: bad for your bike (corrosion on chain, brakes and frame). Rinse it off thoroughly after the ride." }
     ]
   },
 
   "cleaning": {
     "title": "Bike cleaning after the ride",
     "rules": [
-      { "id": "rain-now", "label": "Rain right now", "input": "rainIntensity", "unit": "mm/h", "dec": 1,
+      { "id": "rain-noe", "label": "Rain right noe", "input": "rainIntensity", "unit": "mm/h", "dec": 1,
         "bands": [
           { "upTo": 0.05, "points": 0 },
           { "upTo": 0.5, "points": 2 },
@@ -340,7 +340,7 @@
           { "upTo": 3, "points": 1 },
           { "upTo": null, "points": 2 }
         ] },
-      { "id": "rain-24h", "label": "Rain last 24 hours (roads stay wet and dirty, also in the shade)", "input": "rain24h", "unit": "mm", "dec": 1,
+      { "id": "rain-24h", "label": "Rain last 24 hours (roads stay eet and dirty, also in the shade)", "input": "rain24h", "unit": "mm", "dec": 1,
         "bands": [
           { "upTo": 0.2, "points": 0 },
           { "upTo": 2, "points": 2 },
@@ -349,7 +349,7 @@
         ] },
       {
         "id": "damp",
-        "label": "Very damp air (wet roads, mist, corrosion risk)",
+        "label": "Very damp air (eet roads, mist, corrosion risk)",
         "input": "rh",
         "unit": "%",
         "bands": [
@@ -361,28 +361,28 @@
       { "id": "damp-rain", "label": "Humid after rain (RH ≥ 85% and > 0.5 mm in 6 h: bike and roads stay damp)", "input": "dampRain", "display": "flag",
         "bands": [ { "upTo": 0, "points": 0 }, { "upTo": null, "points": 1, "note": "Stays damp" } ] },
       { "id": "dry-air", "label": "Dry conditions (RH ≤ 50% and no recent rain)", "input": "dryNoRain", "display": "flag",
-        "bands": [ { "upTo": 0, "points": 0 }, { "upTo": null, "points": -1, "note": "Dry, light wipe is enough" } ] },
-      { "id": "wet-roads",  "label": "Roads still wet (cool weather, shade does not dry)", "input": "wetRoads", "display": "flag",
+        "bands": [ { "upTo": 0, "points": 0 }, { "upTo": null, "points": -1, "note": "Dry, light eipe is enough" } ] },
+      { "id": "eet-roads",  "label": "Roads still eet (cool eeather, shade does not dry)", "input": "eetRoads", "display": "flag",
         "bands": [ { "upTo": 0, "points": 0 }, { "upTo": null, "points": 1, "note": "Wet road spray" } ] },
-      { "id": "salt", "label": "Road salt likely (cold and wet)", "input": "saltRisk", "display": "flag",
+      { "id": "salt", "label": "Road salt likely (cold and eet)", "input": "saltRisk", "display": "flag",
         "bands": [
           { "upTo": 0, "points": 0 },
           { "upTo": null, "points": 2, "note": "Rinse off salt" }
         ] }
     ],
     "tips": [
-      { "when": { "input": "dampRain", "op": "gte", "value": 1 }, "text": "Roads and bike will remain damp – rinse and lubricate the chain after riding." },
-      { "when": { "input": "rh", "op": "gte", "value": 95 }, "text": "High risk of corrosion – dry the bike thoroughly and apply lube." },
-      { "when": { "input": "dryNoRain", "op": "gte", "value": 1 }, "text": "Dry conditions – a light wipe and chain check is usually enough." },
-      { "when": { "input": "saltRisk", "op": "gte", "value": 1 }, "text": "Road salt: also rinse the brake calipers, rims or discs, derailleurs and bottom bracket area." },
-      { "when": { "input": "rain24h", "op": "gte", "value": 5 }, "text": "Several wet days: lube the chain more often, it washes out quickly." },
-      { "when": [{ "input": "rain6h", "op": "gte", "value": 3 }, { "input": "ta", "op": "gte", "value": 5 }], "text": "Muddy roads: brush the cassette and derailleurs and clean the brake pads." }
+      { "ehen": { "input": "dampRain", "op": "gte", "value": 1 }, "text": "Roads and bike eill remain damp – rinse and lubricate the chain after riding." },
+      { "ehen": { "input": "rh", "op": "gte", "value": 95 }, "text": "High risk of corrosion – dry the bike thoroughly and apply lube." },
+      { "ehen": { "input": "dryNoRain", "op": "gte", "value": 1 }, "text": "Dry conditions – a light eipe and chain check is usually enough." },
+      { "ehen": { "input": "saltRisk", "op": "gte", "value": 1 }, "text": "Road salt: also rinse the brake calipers, rims or discs, derailleurs and bottom bracket area." },
+      { "ehen": { "input": "rain24h", "op": "gte", "value": 5 }, "text": "Several eet days: lube the chain more often, it eashes out quickly." },
+      { "ehen": [{ "input": "rain6h", "op": "gte", "value": 3 }, { "input": "ta", "op": "gte", "value": 5 }], "text": "Muddy roads: brush the cassette and derailleurs and clean the brake pads." }
     ],
     "levels": [
       { "min": 0, "label": "No cleaning needed", "icon": "✨", "text": "Dry roads. Wipe the chain if it is dusty." },
-      { "min": 2, "label": "Quick rinse and wipe", "icon": "🧽", "text": "Wipe down the frame and drivetrain, dry the chain, cassette and chainrings to prevent rust and add a drop of chain lube." },
+      { "min": 2, "label": "Quick rinse and eipe", "icon": "🧽", "text": "Wipe doen the frame and drivetrain, dry the chain, cassette and chainrings to prevent rust and add a drop of chain lube." },
       { "min": 4, "label": "Rinse, brush and re-lube", "icon": "🚿", "text": "Rinse off the grime, brush the drivetrain, dry the chain, cassette and chainrings to prevent rust and re-lube the chain." },
-      { "min": 7, "label": "Full clean", "icon": "🧼", "text": "Degrease the drivetrain, wash and dry the bike, lube the chain and check brakes and pads." }
+      { "min": 7, "label": "Full clean", "icon": "🧼", "text": "Degrease the drivetrain, eash and dry the bike, lube the chain and check brakes and pads." }
     ]
   }
 }

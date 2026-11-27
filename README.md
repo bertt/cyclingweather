@@ -1,13 +1,13 @@
 # Cycling weather
 
-🚴 **Live: <https://bertt.github.io/cyclingweather/cycling.html>**
+🚴 **Live: <https://bertt.github.io/cyclingweather/>**
 
-A static web page (`web/cycling.html`) that turns the current weather from [Open-Meteo](https://open-meteo.com/) (fetched in the browser, no API key, no backend) into cycling advice for your location, or for a place you search for:
+A static web page (`web/index.html`) that turns the current weather from [Open-Meteo](https://open-meteo.com/) (fetched in the browser, no API key, no backend) into cycling advice for your location, or for a place you search for:
 
 - **Ride score** (0-100): one score that combines comfort and training (the average of both). Sun and dry is good; rain, extreme cold or heat, storm-force wind and poor visibility are bad; moderate wind and cold count as a small plus for training. The rules are listed in the calculation details.
 - **What to wear**: based on the temperature *on the bike* (air temperature about 2 °C lower, extra for rain, damp air via the dew point and wind chill), e.g. short/short above 15 °C, gloves and skullcap below 10 °C, windjacket below 12 °C, windjacket + base layer below 0 °C. Extras for rain, darkness, sun and ice.
 - **Feels-like temperature**: a 🧊 pill shows a standard formula next to the temperature on the bike: wind chill `13.12 + 0.6215·T − 11.37·v^0.16 + 0.3965·T·v^0.16` (T ≤ 10 °C, wind > 4.8 km/h, v = 10 m wind in km/h) or the heat index (T ≥ 27 °C, uses relative humidity). It is hidden when neither formula applies (e.g. calm wind, or 10–27 °C). It ignores riding speed, darkness and wind direction, so it is usually milder than the temperature on the bike.
-- **Thick wind ("dikke wind")**: a 🪨 pill flags cold, high-pressure air, which is denser and gives more air resistance ([background](https://www.allesoverwielrennen.nl/dikke-wind/)). The air density is computed from temperature, pressure and humidity and compared with standard air (1.225 kg/m³): +3.5% or more is "thick wind", +7% or more "very thick wind", −3.5% or less "thin wind"; in between nothing is shown. At 1013 hPa and dry air that is roughly ≤ 5 °C for thick and ≤ −5 °C for very thick; higher pressure shifts this a few degrees warmer. The density uses the virtual temperature, which accounts for humidity: `ρ = (pp·100)/(287.05·T_v)` in kg/m³, with `T_v = T/(1 − (e/pp)·(1 − 0.622))`, `T = ta + 273.15` (K), `e = es(td)` (vapour pressure from the dew point, hPa; from `rh` if the dew point is missing) and `es(x) = 6.1078·10^(7.5·x/(x+237.3))` (Magnus formula). The relative difference is `(ρ / 1.225 − 1)·100`. The thresholds are hard-coded in `web/cycling.html`, not in the rules file.
+- **Thick wind ("dikke wind")**: a 🪨 pill flags cold, high-pressure air, which is denser and gives more air resistance ([background](https://www.allesoverwielrennen.nl/dikke-wind/)). The air density is computed from temperature, pressure and humidity and compared with standard air (1.225 kg/m³): +3.5% or more is "thick wind", +7% or more "very thick wind", −3.5% or less "thin wind"; in between nothing is shown. At 1013 hPa and dry air that is roughly ≤ 5 °C for thick and ≤ −5 °C for very thick; higher pressure shifts this a few degrees warmer. The density uses the virtual temperature, which accounts for humidity: `ρ = (pp·100)/(287.05·T_v)` in kg/m³, with `T_v = T/(1 − (e/pp)·(1 − 0.622))`, `T = ta + 273.15` (K), `e = es(td)` (vapour pressure from the dew point, hPa; from `rh` if the dew point is missing) and `es(x) = 6.1078·10^(7.5·x/(x+237.3))` (Magnus formula). The relative difference is `(ρ / 1.225 − 1)·100`. The thresholds are hard-coded in `web/index.html`, not in the rules file.
 - **Temperature and humidity**: all temperature data are shown together (air temperature, feels-like on the bike, wind chill/heat index, dew point and dew point depression ΔT = air temperature − dew point). Rules from the `humidity` section of the rules file give:
   - **Fog/mist**: strong fog warning at RH ≥ 98% or ΔT ≤ 1 °C; high fog risk at RH ≥ 95% and ΔT ≤ 2 °C; "misty / reduced visibility" at RH ≥ 90% and visibility < 3000 m (the first match is shown).
   - **Clothing**: T ≥ 22 °C and RH ≥ 70% → light, breathable clothing and extra drinking.
@@ -17,7 +17,7 @@ A static web page (`web/cycling.html`) that turns the current weather from [Open
 
 ## Photogenic weather moments
 
-The page shows 📷 warnings for photogenic moments (rules in `web/cycling-rules.json`, inputs in `web/cycling.html`). `elev` is the sun elevation at the location and `n` the cloud cover in octas. They are heuristics from model data, not forecasts.
+The page shows 📷 warnings for photogenic moments (rules in `web/cycling-rules.json`, inputs in `web/index.html`). `elev` is the sun elevation at the location and `n` the cloud cover in octas. They are heuristics from model data, not forecasts.
 
 | Input | Condition |
 |---|---|
@@ -39,10 +39,10 @@ All rules and thresholds live in [`web/cycling-rules.json`](web/cycling-rules.js
 
 | Parameter | Example | Meaning |
 |---|---|---|
-| `lat`, `lon`, `name` | `cycling.html?lat=52.09&lon=5.12&name=Utrecht` | Show the weather for these coordinates (`name` is optional) instead of your current location. The "Other place" button searches a place (Open-Meteo geocoding) and sets these parameters, so you can share a link. Without them the browser location is used; if that is unavailable a place search is shown. |
-| `rules` | `cycling.html?rules=<url-to-json>` | Load your own rules file instead of `cycling-rules.json`. |
+| `lat`, `lon`, `name` | `index.html?lat=52.09&lon=5.12&name=Utrecht` | Show the weather for these coordinates (`name` is optional) instead of your current location. The "Other place" button searches a place (Open-Meteo geocoding) and sets these parameters, so you can share a link. Without them the browser location is used; if that is unavailable a place search is shown. |
+| `rules` | `index.html?rules=<url-to-json>` | Load your own rules file instead of `cycling-rules.json`. |
 
-Parameters can be combined, e.g. `cycling.html?lat=51.92&lon=4.48&rules=my-rules.json`. The page has a "How were these scores calculated?" section showing every rule's contribution. The advice is indicative only.
+Parameters can be combined, e.g. `index.html?lat=51.92&lon=4.48&rules=my-rules.json`. The page has a "How were these scores calculated?" section showing every rule's contribution. The advice is indicative only.
 
 ## Data
 
