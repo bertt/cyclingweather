@@ -837,7 +837,7 @@ async function main() {
       </div>
 
       <div class="sharelink">🚴 ${SHARE_URL}<span class="when">🕒 Observed ${t.toLocaleString("en-GB", { dateStyle:"medium", timeStyle:"short" })} (local time)</span><small>Data: KNMI, CC BY 4.0 · © Bert Temme</small></div>
-      <div class="noshare" style="text-align:center"><button id="aboutbtn" type="button">ℹ️ About</button> <button id="share">📤 Share screenshot</button>${user == null ? ` <button id="retry">Use my location</button>` : ""} <a class="btnlink" href="discussion.html">💬 Discussion</a></div>
+      <div class="noshare" style="text-align:center"><button id="aboutbtn" type="button">ℹ️ About</button> <button id="share">📤 Share screenshot</button>${user == null ? ` <button id="retry">Use my location</button>` : ""} <a class="btnlink" href="discussion.html">💬 Discussion</a> <a class="btnlink" href="https://buymeacoffee.com/berttemme" target="_blank" rel="noopener">☕ Buy me a coffee</a></div>
       <div class="foot noshare">${quote ? `<a href="https://www.velominati.com/the-rules/" target="_blank" rel="noopener">Rule #${quote.rule}</a> · “${esc(quote.text)}”${fullRule ? ` <button type="button" class="rulemore" id="rulemore">More</button>` : ""}<br>` : ""}Observed ${t.toLocaleString("en-GB", { dateStyle:"medium", timeStyle:"short" })} · © Bert Temme</div>`;
 
     const calcDlg = document.getElementById("calcslot");
