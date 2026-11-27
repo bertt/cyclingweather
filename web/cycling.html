@@ -342,7 +342,7 @@ const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&":"&amp;", "<":"&lt;", "
 fetch("testimonials.json").then(r => r.ok ? r.json() : []).then(list => {
   if (!list.length) return;
   const t = list[Math.floor(Math.random() * list.length)], el = document.getElementById("testi");
-  el.innerHTML = `<q>${esc(t.text)}</q><b>${esc(t.name)}</b> · ${esc(t.place)}`;
+  el.innerHTML = `<q>${esc(t.text).replace(/buymeacoffee\.com\/berttemme/g, '<a href="https://buymeacoffee.com/berttemme" target="_blank" rel="noopener">$&</a>')}</q><b>${esc(t.name)}</b> · ${esc(t.place)}`;
   el.hidden = false;
 }).catch(() => {});
 
