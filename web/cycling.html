@@ -237,12 +237,57 @@
     .wrap { width:min(620px,100%); }
   }
   @media (max-width:480px) { .ring { width:56px; height:56px; } .ring > div { width:42px; height:42px; } .ring .n { font-size:13px; } .ring .em { font-size:15px; } .score { column-gap:9px; padding:6px 9px; } .score .verdict { font-size:13px; } }
+  /* cleaner look: flat sections, one alert strip, quiet footer */
+  .card { background:rgba(16,23,38,.94); box-shadow:none; border-radius:18px; }
+  .sec { background:none; border-top:1px solid rgba(255,255,255,.1); border-radius:0; padding:8px 0 2px; margin-top:8px; }
+  .sec h2 { font-size:11px; letter-spacing:.1em; color:var(--mut); }
+  .alerts { margin-top:6px; display:grid; gap:3px; }
+  .alert { padding:4px 10px; border-radius:10px; background:rgba(239,68,68,.22); border-left:3px solid #ef4444; font-size:12.5px; line-height:1.3; }
+  .row { display:flex; gap:8px; align-items:center; margin-top:6px; font-size:12.5px; }
+  .row .em { font-size:18px; }
+  .chips { margin-top:6px; }
+  .pill { background:rgba(255,255,255,.07); }
+  .pill span { color:var(--mut); }
+  .item.extra { border-style:solid; }
+  .clean .em { font-size:22px; }
+  .clean .l { font-size:14px; }
+  .dots i { width:16px; height:4px; }
+  .foot a { color:var(--mut); }
+  .foot .rulemore { margin:0 0 0 4px; }
+  details { margin-top:4px; }
+  details .chips { margin-top:4px; }
+  .wx { margin-top:8px; display:grid; gap:2px; }
+  .grow { display:flex; gap:8px; align-items:baseline; padding:3px 0; border-top:1px solid rgba(255,255,255,.07); }
+  .glabel { flex:0 0 62px; font-size:10.5px; letter-spacing:.08em; text-transform:uppercase; color:var(--mut); }
+  .grow .chips { margin-top:0; }
+  .dirsec .compass { max-width:118px; }
+  .dirrow { gap:6px; }
+  .wx { margin-top:4px; }
+  .grow { padding:2px 0; gap:6px; }
+  .glabel { flex-basis:38px; font-size:10px; letter-spacing:.04em; }
+  .grow .chips { gap:3px; }
+  .grow .pill { padding:0 6px; font-size:11.5px; }
+  .head .place { font-size:16px; }
+  .sec { margin-top:4px; padding:5px 0 0; }
+  .sec h2 { margin:0 0 2px; font-size:10px; }
+  .outfit { font-size:14px; }
+  .items { margin-top:2px; }
+  .item { padding:1px 7px; font-size:12px; }
+  .why, .row { margin-top:2px; font-size:11.5px; }
+  .alert { padding:2px 8px; font-size:12px; }
+  .clean { gap:8px; }
+  .clean .t { font-size:11.5px; }
+  .dots { margin-top:3px; }
+  .foot { margin-top:4px; font-size:10.5px; }
+  button, .btnlink { margin-top:4px; padding:3px 10px; font-size:12px; }
+  .card { padding:6px 12px; }
+  body { padding:6px; }
+  .bigverdict { font-size:18px; }
 </style>
 </head>
 <body>
 <div class="wrap">
-  <div class="testi" id="testi" hidden></div>
-  <dialog id="info">
+  <div class="testi" id="testi" hidden></div>  <dialog id="info">
     <form method="dialog" class="ihead"><div><div class="ititle">🚴 Cycling weather</div><div class="isub">Should you ride today, and what should you wear? Advice based on live weather observations.</div></div>
       <button class="iclose" aria-label="Close">✕</button></form>
     <div class="inav"><a href="./">🗺️ All stations on a map</a><a href="nearby.html">🌦️ Weather near you</a></div>
@@ -300,6 +345,7 @@ fetch("testimonials.json").then(r => r.ok ? r.json() : []).then(list => {
   el.innerHTML = `<q>${esc(t.text)}</q><b>${esc(t.name)}</b> · ${esc(t.place)}`;
   el.hidden = false;
 }).catch(() => {});
+
 const rgbOf = hex => { const h = String(hex).replace("#", ""); const n = parseInt(h.length === 3 ? h.replace(/./g, "$&$&") : h, 16); return `${n >> 16 & 255},${n >> 8 & 255},${n & 255}`; };
 const fmt = (v, d = 0) => v == null ? "–" : v.toFixed(d);
 const bft = v => [0.3,1.6,3.4,5.5,8,10.8,13.9,17.2,20.8,24.5,28.5,32.7].filter(t => v >= t).length;
@@ -671,34 +717,43 @@ async function main() {
     const cleanTips = (R.cleaning.tips ?? []).filter(x => test(x.when, inp)).map(x => x.text);
 
     const feels = inp.rideTemp == null ? null : inp.rideTemp;
-    const pills = [
-      inp.rainIntensity != null && `🌧️ <b>${fmt(inp.rainIntensity, 1)}</b> mm/h`,
-      o.R1H != null && `☔ <b>${fmt(o.R1H, 1)}</b> mm last hour`,
-      o.ff != null && `💨 <b>${bft(o.ff)}</b> Bft${o.dd != null ? ` from <b>${compass(o.dd)}</b>` : ""}`,
-      inp.gust != null && `🌬️ gusts <b>${bft(inp.gust)}</b> Bft`,
-      o.qg != null && `☀️ <b>${sunWord(o.qg)}</b> <span>${fmt(o.qg)} W/m²</span>`,
-      (th => th && `🪨 <b>${th.label}</b> <span>${th.pct > 0 ? "+" : ""}${fmt(th.pct, 0)}% air resistance</span>`)(windThickness(airDensity(o.ta, o.pp, o.rh, o.td))),
-      o.pp != null && `🧭 <b>${fmt(o.pp)}</b> hPa <span>${pressureLabel(o.pp)}</span>`,
-      o.vv != null && `👁️ <b>${fmt(o.vv / 1000, 1)}</b> km`,
-      (dl => dl && `${dl.dark ? "🌆 dark at" : "🌅 light at"} <b>${dl.at.toLocaleTimeString("nl-NL", { hour: "2-digit", minute: "2-digit" })}</b>`)(nextDarkLight(new Date(), s.lat, s.lon)),
-    ].filter(Boolean).map(p => `<span class="pill">${p}</span>`).join("");
+    const pillHtml = list => list.filter(Boolean).map(p => `<span class="pill">${p}</span>`).join("");
+    const groups = [
+      ["Temp", [
+        o.ta != null && `🌡️ <b>${fmt(o.ta, 1)}°</b> <span>feels ${fmt(feels, 1)}°</span>`,
+        inp.feelsFormula != null && `🧊 <b>${fmt(inp.feelsFormula, 1)}°</b> <span>${inp.ta <= 10 ? "wind chill" : "heat index"}</span>`,
+      ]],
+      ["Wind", [
+        o.ff != null && `💨 <b>${bft(o.ff)}</b> Bft${o.dd != null ? ` ${compass(o.dd)}` : ""}${inp.gust != null ? ` <span>gusts ${bft(inp.gust)}</span>` : ""}`,
+        (th => th && `🪨 <b>${th.label}</b> <span>${th.pct > 0 ? "+" : ""}${fmt(th.pct, 0)}% air resistance</span>`)(windThickness(airDensity(o.ta, o.pp, o.rh, o.td))),
+      ]],
+      ["Wet", [
+        o.rh != null && `💧 <b>${fmt(o.rh, 0)}%</b>`,
+        o.td != null && `Dew <b>${fmt(o.td, 1)}°</b>`,
+        inp.spread != null && `Spread <b>${fmt(inp.spread, 1)}°</b> <span>${inp.spread <= 2 ? "clammy / fog" : inp.spread <= 5 ? "humid" : inp.spread <= 10 ? "moderate" : "dry"}</span>`,
+        inp.rainIntensity != null && `🌧️ <b>${fmt(inp.rainIntensity, 1)}</b> mm/h`,
+        o.R1H != null && `☔ <b>${fmt(o.R1H, 1)}</b> mm <span>1 h</span>`,
+      ]],
+      ["Sky", [
+        o.qg != null && `☀️ <b>${sunWord(o.qg)}</b>`,
+        o.vv != null && `👁️ <b>${fmt(o.vv / 1000, 1)}</b> km`,
+        o.pp != null && `🧭 <b>${fmt(o.pp)}</b> hPa <span>${pressureLabel(o.pp)}</span>`,
+        (dl => dl && `${dl.dark ? "🌆 dark at" : "🌅 light at"} <b>${dl.at.toLocaleTimeString("nl-NL", { hour: "2-digit", minute: "2-digit" })}</b>`)(nextDarkLight(new Date(), s.lat, s.lon)),
+      ]],
+    ];
+    const pills = groups.map(([label, list]) => ({ label, html: pillHtml(list) })).filter(g => g.html)
+      .map(g => `<div class="grow"><div class="glabel">${g.label}</div><div class="chips">${g.html}</div></div>`).join("");
 
     const hum = R.humidity ?? {};
     const fogRule = (hum.fog ?? []).find(x => test(x.when, inp));
     const humList = k => (hum[k] ?? []).filter(x => test(x.when, inp)).map(x => x.text);
-    const sp = inp.spread;
-    const spBand = sp == null ? null : sp <= 2 ? ["#ef5350", "very clammy / fog risk"] : sp <= 5 ? ["#fdd835", "humid"] : sp <= 10 ? ["#aed581", "moderate"] : ["#43a047", "relatively dry"];
-    const tempPills = [
-      o.ta != null && `🌡️ <b>${fmt(o.ta, 1)}°</b> <span>feels ${fmt(feels, 1)}° on the bike</span>`,
-      inp.feelsFormula != null && `🧊 <b>${fmt(inp.feelsFormula, 1)}°</b> <span>${inp.ta <= 10 ? "wind chill" : "heat index"}</span>`,
-    ].filter(Boolean).map(p => `<span class="pill">${p}</span>`).join("");
-    const humBlock = o.ta == null && o.rh == null && o.td == null ? "" : `<div class="hum">
-        <div class="chips" style="margin:0 0 8px">${tempPills}${[o.rh != null && `<span class="pill">💧 <b>${fmt(o.rh, 0)}%</b> RH</span>`, o.td != null && `<span class="pill">Td <b>${fmt(o.td, 1)}°C</b></span>`,
-          sp != null && `<span class="pill" style="background:${spBand[0]};color:#111">ΔT <b>${fmt(sp, 1)}°C</b></span>`].filter(Boolean).join("")}</div>
-        ${spBand ? `<div class="why">Dew point depression (air − dew point): ${spBand[1]}</div>` : ""}
-        ${fogRule ? `<div class="warn">${fogRule.icon ?? "🌫️"} ${esc(fogRule.text)}</div>` : ""}
-        ${["clothing", "tips"].map(k => humList(k).map(x => `<div class="why">${{ clothing: "👕", tips: "💡" }[k]} ${esc(x)}</div>`).join("")).join("")}
-      </div>`;
+    const alerts = [...new Set([
+      sensorNote && `⚠️ ${sensorNote}`,
+      notice && `ℹ️ ${notice}`,
+      fogRule && `${fogRule.icon ?? "🌫️"} ${esc(fogRule.text)}`,
+      ...warnings.map(w => `⚠️ ${esc(w)}`),
+    ].filter(Boolean))];
+    const tips = [...humList("clothing").map(x => `👕 ${esc(x)}`), ...humList("tips").map(x => `💡 ${esc(x)}`)];
 
     const scale = (res, dirt) => res.rows.map(({ r, v, points }) => {
       const u = r.unit ? ` ${r.unit}` : "";
@@ -713,34 +768,29 @@ async function main() {
 
     card.innerHTML = `
       <div class="head">
-        <div class="place"><span class="title">🚴 Cycling weather</span> · ${esc(s.name)}</div>
-        <div class="sub">${distance == null ? "KNMI station" : `KNMI station · ${fmt(distance, distance < 10 ? 1 : 0)} km from you`}
+        <div class="place">${esc(s.name)}</div>
+        <div class="sub">${distance == null ? "KNMI station" : `${fmt(distance, distance < 10 ? 1 : 0)} km from you`}
         <select id="pick" aria-label="Choose a station">${sorted.map(({ s: st, i }) =>
           `<option value="${i}"${i === idx ? " selected" : ""}>${esc(st.name)}${user ? ` · ${fmt(km(user.latitude, user.longitude, st.lat, st.lon))} km` : ""}</option>`).join("")}</select></div>
-        ${notice ? `<div class="notice">ℹ️ ${notice}</div>` : ""}
-        ${sensorNote ? `<div class="warn">⚠️ ${sensorNote}</div>` : ""}
       </div>
+      ${alerts.length ? `<div class="alerts">${alerts.map(a => `<div class="alert">${a}</div>`).join("")}</div>` : ""}
 
       ${dirBlock}
-      ${humBlock}
-      <div class="chips">${pills}</div>
-      ${quote ? `<div class="rule" style="margin:10px 0 0"><a href="https://www.velominati.com/the-rules/" target="_blank" rel="noopener">Velominati Rule #${quote.rule}</a>       · “${esc(quote.text)}”${fullRule ? ` <button type="button" class="rulemore noshare" id="rulemore">More</button>` : ""}</div>` : ""}
-           ${quote && fullRule ? `<dialog id="rulefull" class="noshare">
+      <div class="wx">${pills}</div>
+      ${quote && fullRule ? `<dialog id="rulefull" class="noshare">
              <form method="dialog" class="ihead"><div><div class="ititle">Velominati Rule #${fullRule.rule}</div><div class="isub">${esc(fullRule.title)}</div></div>
                <button class="iclose" aria-label="Close">✕</button></form>
              <div class="rtext">${esc(fullRule.text)} <a href="https://www.velominati.com/the-rules/" target="_blank" rel="noopener">All rules</a></div>
            </dialog>` : ""}
 
-           <div class="sec wear"><h2>👕 What to wear</h2>
+      <div class="sec wear"><h2>👕 Wear</h2>
         ${band ? `<div class="outfit">${esc(band.label)}</div>
           <div class="items">${(band.items).map(i => `<span class="item">${iconFor(i)} ${esc(i)}</span>`).join("")}
             ${extraOnly.map(i => `<span class="item extra">${iconFor(i)} ${esc(i)}</span>`).join("")}</div>
           ${band.note ? `<div class="why">${esc(band.note)}</div>` : ""}` : `<div class="why">No temperature data for this station.</div>`}
-        ${warnings.map(w => `<div class="warn">⚠️ ${esc(w)}</div>`).join("")}
+        ${rj ? `<div class="row"><span class="em">${rj.icon}</span><span><b>${esc(rj.label)}</b> · ${esc(rj.text)}</span></div>` : ""}
+        ${tips.map(x => `<div class="why">${x}</div>`).join("")}
       </div>
-
-      ${rj ? `<div class="sec"><h2>${esc(R.rainJacket.title)}</h2>
-        <div class="clean"><div class="em">${rj.icon}</div><div><div class="l">${esc(rj.label)}</div><div class="t">${esc(rj.text)}</div></div></div></div>` : ""}
 
       <div class="sec"><h2>🧽 ${esc(R.cleaning.title)}</h2>
         <div class="clean"><div class="em">${level.icon}</div><div>
@@ -788,7 +838,7 @@ async function main() {
 
       <div class="sharelink">🚴 ${SHARE_URL}<span class="when">🕒 Observed ${t.toLocaleString("en-GB", { dateStyle:"medium", timeStyle:"short" })} (local time)</span><small>Data: KNMI, CC BY 4.0 · © Bert Temme</small></div>
       <div class="noshare" style="text-align:center"><button id="aboutbtn" type="button">ℹ️ About</button> <button id="share">📤 Share screenshot</button>${user == null ? ` <button id="retry">Use my location</button>` : ""} <a class="btnlink" href="discussion.html">💬 Discussion</a></div>
-      <div class="foot noshare">Observed ${t.toLocaleString("en-GB", { dateStyle:"medium", timeStyle:"short" })} (your time) · © Bert Temme</div>`;
+      <div class="foot noshare">${quote ? `<a href="https://www.velominati.com/the-rules/" target="_blank" rel="noopener">Rule #${quote.rule}</a> · “${esc(quote.text)}”${fullRule ? ` <button type="button" class="rulemore" id="rulemore">More</button>` : ""}<br>` : ""}Observed ${t.toLocaleString("en-GB", { dateStyle:"medium", timeStyle:"short" })} · © Bert Temme</div>`;
 
     const calcDlg = document.getElementById("calcslot");
     calcDlg.replaceChildren(card.querySelector("#calcwrap"));
