@@ -343,7 +343,7 @@ const bft = v => [0.3,1.6,3.4,5.5,8,10.8,13.9,17.2,20.8,24.5,28.5,32.7].filter(t
 const sunWord = q => q < 10 ? "dark / no sun" : q < 100 ? "overcast" : q < 250 ? "cloudy" : q < 500 ? "partly sunny" : q < 800 ? "sunny" : "very sunny";
 const sg = v => `${v < 0 ? "−" : "+"}${Math.abs(v)}°`;
 const INPUT_NAMES = { pp: "air pressure (hPa)", comfort: "ride comfort score", rainIntensity: "rain now (mm/h)", rain1h: "rain last hour (mm)", rain6h: "rain last 6 h (mm)", rain24h: "rain last 24 h (mm)",
-  rideTemp: "temperature on the bike (°C)", ta: "air temperature (°C)", qg: "sun (W/m²)", vv: "visibility (m)", night: "dark", darkness: "darkness (%)", moonlight: "bright moon and clear sky", dull: "overcast and windless", coldEastWind: "cold easterly wind", sunGlare: "low sun glare", redSky: "chance of a red sky", mistLight: "mist in low sun", rime: "chance of rime", rainbow: "chance of a rainbow", goldenHour: "golden hour", blueHour: "blue hour", crepuscular: "crepuscular rays", stormLight: "storm light", snowSun: "snow in sunlight", starryNight: "starry night", aurora: "northern lights conditions", fullMoon: "full moon", leafRisk: "wet autumn leaves", foggyCold: "fog and cold", bridgeIce: "ice on bridges", dryCold: "dry cold air", intervalWeather: "calm and dry", wetDrive: "wet drivetrain", wetRoads: "roads still wet (slow drying, shade)", moonIllumination: "moon illuminated (%)", darkSoon: "dark within 2 hours", iceRisk: "ice risk", saltRisk: "salt risk", hail: "hail", snow: "snow", thunder: "thunderstorm", ff: "wind (m/s)", gust: "gusts (m/s)", rh: "humidity (%)" };
+  rideTemp: "temperature on the bike (°C)", ta: "air temperature (°C)", qg: "sun (W/m²)", vv: "visibility (m)", night: "dark", darkness: "darkness (%)", moonlight: "bright moon and clear sky", dull: "overcast and windless", coldEastWind: "cold easterly wind", sunGlare: "low sun glare", redSky: "chance of a red sky", mistLight: "mist in low sun", rime: "chance of rime", rainbow: "chance of a rainbow", goldenHour: "golden hour", blueHour: "blue hour", crepuscular: "crepuscular rays", stormLight: "storm light", snowSun: "snow in sunlight", starryNight: "starry night", aurora: "northern lights conditions", moonbow: "chance of a moonbow", meteor: "meteor shower", fullMoon: "full moon", leafRisk: "wet autumn leaves", foggyCold: "fog and cold", bridgeIce: "ice on bridges", dryCold: "dry cold air", intervalWeather: "calm and dry", wetDrive: "wet drivetrain", wetRoads: "roads still wet (slow drying, shade)", moonIllumination: "moon illuminated (%)", darkSoon: "dark within 2 hours", iceRisk: "ice risk", saltRisk: "salt risk", hail: "hail", snow: "snow", thunder: "thunderstorm", ff: "wind (m/s)", gust: "gusts (m/s)", rh: "humidity (%)" };
 const OP_TEXT = { gt: ">", gte: "≥", lt: "<", lte: "≤", eq: "=" };
 const condText = c => ["night", "darkSoon", "iceRisk", "snow", "saltRisk", "coldEastWind", "sunGlare", "leafRisk", "foggyCold", "bridgeIce", "dryCold", "intervalWeather", "wetDrive"].includes(c.input) && c.op === "gte" && c.value === 1
   ? INPUT_NAMES[c.input] : `${INPUT_NAMES[c.input] ?? c.input} ${OP_TEXT[c.op] ?? c.op} ${c.value}`;
@@ -447,6 +447,26 @@ function nextDarkLight(t, lat, lon) {
   return null;
 }
 
+// Major meteor showers: peak date (month, day), days either side of the peak, ZHR (rough), minimum latitude
+const METEOR_SHOWERS = [
+  { name: "Quadrantids", m: 1, d: 3, days: 1, zhr: 80, minLat: 20 },
+  { name: "Lyrids", m: 4, d: 22, days: 2, zhr: 18, minLat: -10 },
+  { name: "Eta Aquariids", m: 5, d: 6, days: 3, zhr: 50, minLat: -60 },
+  { name: "Delta Aquariids", m: 7, d: 30, days: 3, zhr: 25, minLat: -60 },
+  { name: "Perseids", m: 8, d: 12, days: 4, zhr: 100, minLat: 0 },
+  { name: "Orionids", m: 10, d: 21, days: 3, zhr: 20, minLat: -60 },
+  { name: "Leonids", m: 11, d: 17, days: 2, zhr: 15, minLat: -60 },
+  { name: "Geminids", m: 12, d: 14, days: 3, zhr: 150, minLat: -60 },
+];
+function activeMeteorShower(t, lat) {
+  const day = 864e5;
+  return METEOR_SHOWERS.find(w => {
+    if (lat < w.minLat) return false;
+    const peak = Date.UTC(t.getUTCFullYear(), w.m - 1, w.d, 12);
+    return Math.abs(t.getTime() - peak) <= (w.days + 0.5) * day;
+  })?.name ?? null;
+}
+
 function derive(o, s, t, R) {
   const r = R.ride;
   const rainIntensity = maxOf(o.rg, o.pg);
@@ -477,6 +497,7 @@ function derive(o, s, t, R) {
   const thunderNow = [95, 96, 99].includes(o.ww);
   const snowNow = [71, 73, 75, 77, 85, 86].includes(o.ww) && o.ta != null && o.ta <= 2;
   const elev = sunElevation(t, s.lat, s.lon);
+  const meteorName = activeMeteorShower(t, s.lat);
   const moonlight = darkness >= 50 && o.n != null && o.n <= (r.moonMaxCloudOctas ?? 2) &&
     moon.illumination >= (r.moonMinIlluminationPct ?? 50) && moon.altitude >= (r.moonMinAltitudeDeg ?? 5) ? 1 : 0;
   // Full moon and partly clear sky
@@ -509,6 +530,10 @@ function derive(o, s, t, R) {
     crepuscular: o.n != null && o.n >= 4 && o.n <= 6 && !raining && elev > 0 && elev < 10 ? 1 : 0,
     stormLight: thunderNow && elev > 0 && elev < 15 ? 1 : 0,
     snowSun: snowNow && o.n != null && o.n <= 5 && elev > 5 ? 1 : 0,
+    moonbow: moon.illumination >= (r.moonbowMinIlluminationPct ?? 85) && moon.altitude >= 2 && moon.altitude <= 42 && elev < -12 &&
+      o.n != null && o.n <= 6 && !thunderNow && ((o.ww >= 80 && o.ww <= 86) || raining) ? 1 : 0,
+    meteor: meteorName && o.n != null && o.n <= 2 && elev < -12 && (moon.illumination <= 50 || moon.altitude < 0) ? 1 : 0,
+    meteorShower: meteorName,
     aurora: o.aurora != null && o.aurora >= (r.auroraMinProbabilityPct ?? 5) && o.n != null && o.n <= 2 && elev < -12 && (o.rh == null || o.rh <= 90) ? 1 : 0,
     auroraProb: o.aurora ?? null,
     starryNight: o.n != null && o.n <= 1 && moon.illumination <= 10 && elev < -18 && (o.rh == null || o.rh <= 85) ? 1 : 0,
@@ -627,7 +652,7 @@ async function main() {
     const fullRule = quote ? allRules.find(q => q.rule === quote.rule) : null;
     const band = inp.rideTemp == null ? null : pick(R.clothing.bands, inp.rideTemp);
     const extras = new Set(), warnings = [];
-    for (const e of R.clothing.extras) if (test(e.when, inp)) { (e.items ?? []).forEach(i => extras.add(i)); if (e.warning) warnings.push(e.warning.replaceAll("{auroraProb}", inp.auroraProb ?? "")); }
+    for (const e of R.clothing.extras) if (test(e.when, inp)) { (e.items ?? []).forEach(i => extras.add(i)); if (e.warning) warnings.push(e.warning.replaceAll("{auroraProb}", inp.auroraProb ?? "").replaceAll("{meteorShower}", inp.meteorShower ?? "")); }
     const base = new Set(band?.items ?? []);
     const extraOnly = [...extras].filter(i => !base.has(i));
 

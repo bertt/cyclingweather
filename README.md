@@ -34,6 +34,8 @@ The page shows 📷 warnings for photogenic moments (rules in `web/cycling-rules
 | `snowSun` | Snow in sunlight: snow (`ww` snow code, ≤ 2 °C), `n` ≤ 5, `elev` > 5°. |
 | `fullMoon` | Full moon: illumination ≥ 95%, `n` ≤ 6, moon up now or within 3 h. |
 | `starryNight` | Starry night: moon illumination ≤ 10%, `n` ≤ 1, `elev` < −18°, RH ≤ 85%. |
+| `moonbow` | Moonbow: moon illumination ≥ 85% (`moonbowMinIlluminationPct`), moon 2–42° above the horizon, `elev` < −12°, `n` ≤ 6, shower (`ww` 80–86) or rain without thunder. |
+| `meteor` | Meteor shower: within a few days of the peak of the Quadrantids, Lyrids, Eta Aquariids, Delta Aquariids, Perseids, Orionids, Leonids or Geminids (fixed peak dates in `METEOR_SHOWERS`, latitude limits where the shower is hardly visible), `n` ≤ 2, `elev` < −12°, moon ≤ 50% illuminated or below the horizon. The warning names the shower. |
 | `aurora` | Chance of northern/southern lights: NOAA SWPC [OVATION](https://www.swpc.noaa.gov/products/aurora-30-minute-forecast) probability ≥ 5% (`auroraMinProbabilityPct`) for the 1° grid cell, `n` ≤ 2, `elev` < −12°, RH ≤ 90%. The model data (~900 kB, no key, cached 10 minutes) is only fetched when the sky is dark and clear at latitude ≥ 45°. The warning shows the probability. |
 
 ## Rules and URL parameters
