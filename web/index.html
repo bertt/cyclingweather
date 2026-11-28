@@ -138,6 +138,15 @@
   .places { margin-top:8px; display:grid; gap:4px; }
   .places a { display:block; padding:5px 12px; border-radius:12px; background:rgba(255,255,255,.07); color:var(--fg); text-decoration:none; font-size:13px; }
   .places a small { color:var(--mut); }
+  .head { position:relative; }
+  .placesearch { position:relative; max-width:300px; margin:8px auto 0; }
+  .placesearch input { width:100%; box-sizing:border-box; font:inherit; font-size:14px; color:#fff; background:rgba(0,0,0,.28); border:1px solid rgba(255,255,255,.25); border-radius:999px; padding:5px 14px; }
+  .suggest { position:absolute; left:0; right:0; top:calc(100% + 4px); z-index:30; text-align:left; background:#16202f; border:1px solid rgba(255,255,255,.2); border-radius:14px; overflow:hidden; box-shadow:0 8px 24px rgba(0,0,0,.5); }
+  .suggest:empty { display:none; }
+  .suggest a, .suggest div { display:block; padding:7px 14px; color:var(--fg); text-decoration:none; font-size:13px; cursor:pointer; }
+  .suggest a:hover, .suggest a.act { background:rgba(255,255,255,.12); }
+  .suggest small, .suggest div { color:var(--mut); }
+  .suggest a small { display:block; font-size:11px; }
   .sec { margin-top:14px; padding:13px 14px; border-radius:20px; background:rgba(255,255,255,.05); }
   .sec h2 { margin:0 0 8px; font-size:12px; font-weight:600; letter-spacing:.1em; text-transform:uppercase; color:var(--mut); }
   .outfit { font-size:17px; font-weight:650; }
@@ -574,11 +583,12 @@ const iconFor = item => ITEM_ICONS.find(([re]) => re.test(item))?.[1] ?? "•";
 const valueText = (r, v) => v == null ? "–" : r.display === "flag" ? (v ? "yes" : "no") : `${fmt(v, r.dec ?? 1)}${r.unit ? " " + r.unit : ""}`;
 const signed = (p, dirt = false) => p === 0 ? `<span class="zero">0</span>` : `<span class="${(p > 0) !== dirt ? "pos" : "neg"}">${p > 0 ? "+" : ""}${p}</span>`;
 
-const PLACE_URL = (lat, lon, name) => {
+const PLACE_URL = (lat, lon, name, country) => {
   const u = new URL(location.href);
   u.search = "";
   u.searchParams.set("lat", lat.toFixed(4)); u.searchParams.set("lon", lon.toFixed(4));
   if (name) u.searchParams.set("name", name);
+  if (country) u.searchParams.set("country", country);
   const rules = PARAMS.get("rules"); if (rules) u.searchParams.set("rules", rules);
   return u.href;
 };
@@ -600,7 +610,7 @@ function renderSearch(message) {
       const found = await searchPlaces(text);
       if (mine !== seq) return;
       places.innerHTML = found.length
-        ? found.map(p => `<a href="${esc(PLACE_URL(p.lat, p.lon, p.name))}">${esc(p.name)} <small>${esc(p.detail)}</small></a>`).join("")
+        ? found.map(p => `<a href="${esc(PLACE_URL(p.lat, p.lon, p.name, p.country))}">${esc(p.name)} <small>${esc(p.detail)}</small></a>`).join("")
         : "No places found.";
     } catch (err) { if (mine === seq) places.textContent = `Search failed: ${err.message}`; }
   };
@@ -620,7 +630,7 @@ async function main() {
   let user = null, place;
   if (HAS_PLACE) {
     step("s-loc", "skip", "Using the place from the link");
-    place = { lat: LAT, lon: LON, name: PARAMS.get("name") || `${LAT.toFixed(2)}, ${LON.toFixed(2)}` };
+    place = { lat: LAT, lon: LON, name: PARAMS.get("name") || `${LAT.toFixed(2)}, ${LON.toFixed(2)}`, country: PARAMS.get("country") };
   } else {
     try {
       user = (await getPosition()).coords;
@@ -638,7 +648,7 @@ async function main() {
     fetch("velominati-rules.json").then(r => r.ok ? r.json() : []).catch(() => []),
     user ? reverseGeocode(place.lat, place.lon) : null,
   ]);
-  if (found) place.name = found;
+  if (found) { place.name = found.name; place.country = found.country; }
   // Aurora model data is large: only fetch when the sky is dark and clear at high latitude
   if (wx.o.n != null && wx.o.n <= 2 && Math.abs(place.lat) >= 45 && sunElevation(new Date(), place.lat, place.lon) < -12) {
     wx.o.aurora = await loadAurora(place.lat, place.lon);
@@ -735,8 +745,9 @@ async function main() {
     card.innerHTML = `
       <div class="head">
         <div class="brand">🚴 Brisa <span style="font-weight:500;letter-spacing:0;text-transform:none;color:var(--mut)">· cycling weather app</span></div>
-        <div class="place">${esc(s.name)} <span style="font-size:.6em;font-weight:400;opacity:.7">· ${t.toLocaleString("en-GB", { day:"numeric", month:"short", year:"numeric", hour:"2-digit", minute:"2-digit" })}</span> <button id="place" type="button" class="noshare" style="margin:0 0 0 6px;padding:2px 10px;font-size:12px;font-weight:500;vertical-align:middle">📍 Other place</button></div>
+        <div class="place">${esc(s.name)}${place.country ? `<span style="font-size:.75em;font-weight:500;opacity:.8">, ${esc(place.country)}</span>` : ""} <span style="font-size:.6em;font-weight:400;opacity:.7">· ${t.toLocaleString("en-GB", { day:"numeric", month:"short", year:"numeric", hour:"2-digit", minute:"2-digit" })}</span> <button id="place" type="button" class="noshare" style="margin:0 0 0 6px;padding:2px 10px;font-size:12px;font-weight:500;vertical-align:middle">📍 Other place</button></div>
         <div class="sub">${user ? "Your location · " : ""}${place.lat.toFixed(3)}, ${place.lon.toFixed(3)}</div>
+        <div class="placesearch noshare" id="placesearch" hidden><input id="pq" type="search" placeholder="Search a city or village" aria-label="Place" autocomplete="off"><div class="suggest" id="suggest"></div></div>
       </div>
       ${alerts.length ? `<div class="alerts">${alerts.map(a => `<div class="alert">${a}</div>`).join("")}</div>` : ""}
 
@@ -829,7 +840,7 @@ async function main() {
         });
         const blob = await new Promise(r => canvas.toBlob(r, "image/png"));
         const file = new File([blob], `cycling-${s.name.replace(/\W+/g, "-").toLowerCase()}.png`, { type: "image/png" });
-        const link = HAS_PLACE ? PLACE_URL(place.lat, place.lon, PARAMS.get("name")) : SHARE_URL;
+        const link = HAS_PLACE ? PLACE_URL(place.lat, place.lon, PARAMS.get("name"), place.country) : SHARE_URL;
         const text = `Brisa cycling weather${HAS_PLACE ? ` at ${place.name}` : ""}: ${link}`;
         if (navigator.canShare?.({ files: [file] })) await navigator.share({ files: [file], text });
         else {
@@ -844,7 +855,7 @@ async function main() {
     document.getElementById("sharepage").addEventListener("click", async e => {
       const btn = e.currentTarget, label = btn.textContent;
       // Coordinates are rounded to about 1 km so sharing does not reveal an exact position
-      const link = PLACE_URL(Math.round(place.lat * 100) / 100, Math.round(place.lon * 100) / 100, place.name);
+      const link = PLACE_URL(Math.round(place.lat * 100) / 100, Math.round(place.lon * 100) / 100, place.name, place.country);
       try {
         if (navigator.share) await navigator.share({ title: `Brisa cycling weather at ${place.name}`, url: link });
         else {
@@ -857,9 +868,45 @@ async function main() {
       }
     });
     document.getElementById("retry")?.addEventListener("click", () => {
-      const u = new URL(location.href); u.searchParams.delete("lat"); u.searchParams.delete("lon"); u.searchParams.delete("name"); location.href = u;
+      const u = new URL(location.href); u.searchParams.delete("lat"); u.searchParams.delete("lon"); u.searchParams.delete("name"); u.searchParams.delete("country"); location.href = u;
     });
-    document.getElementById("place").addEventListener("click", () => renderSearch(""));
+    const box = document.getElementById("placesearch"), pq = document.getElementById("pq"), suggest = document.getElementById("suggest");
+    let timer, seq = 0, results = [], active = -1;
+    const closeSearch = () => { box.hidden = true; suggest.innerHTML = ""; pq.value = ""; seq++; };
+    const go = p => { location.href = PLACE_URL(p.lat, p.lon, p.name, p.country); };
+    const highlight = () => suggest.querySelectorAll("a").forEach((a, i) => a.classList.toggle("act", i === active));
+    const runSearch = async () => {
+      const text = pq.value.trim(), mine = ++seq;
+      if (text.length < 2) { suggest.innerHTML = ""; return; }
+      suggest.innerHTML = `<div>Searching…</div>`;
+      try {
+        const found = await searchPlaces(text);
+        if (mine !== seq) return;
+        results = found; active = -1;
+        suggest.innerHTML = found.length
+          ? found.map((p, i) => `<a data-i="${i}">${esc(p.name)}<small>${esc(p.detail)}</small></a>`).join("")
+          : `<div>No places found.</div>`;
+      } catch (err) { if (mine === seq) suggest.innerHTML = `<div>Search failed: ${esc(err.message)}</div>`; }
+    };
+    document.getElementById("place").addEventListener("click", () => {
+      if (box.hidden) { box.hidden = false; pq.focus(); } else closeSearch();
+    });
+    pq.addEventListener("input", () => { clearTimeout(timer); timer = setTimeout(runSearch, 250); });
+    pq.addEventListener("keydown", e => {
+      if (e.key === "Escape") closeSearch();
+      else if (e.key === "ArrowDown" || e.key === "ArrowUp") {
+        if (!results.length) return;
+        e.preventDefault();
+        active = (active + (e.key === "ArrowDown" ? 1 : -1) + results.length) % results.length;
+        highlight();
+      } else if (e.key === "Enter") {
+        e.preventDefault();
+        const p = results[active >= 0 ? active : 0];
+        if (p) go(p);
+      }
+    });
+    suggest.addEventListener("click", e => { const a = e.target.closest("a[data-i]"); if (a) go(results[+a.dataset.i]); });
+    document.addEventListener("click", e => { if (!box.hidden && !box.contains(e.target) && e.target.id !== "place") closeSearch(); });
   };
   step("s-calc", "run");
   await new Promise(r => requestAnimationFrame(() => setTimeout(r, 0)));

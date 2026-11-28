@@ -45,7 +45,7 @@ export async function loadWeather(lat, lon) {
   return { time, o };
 }
 
-// Nearest place name for coordinates (BigDataCloud client-side reverse geocoding, no key); null when unavailable
+// Nearest place for coordinates (BigDataCloud client-side reverse geocoding, no key): { name, country }, or null when unavailable
 export async function reverseGeocode(lat, lon) {
   try {
     const u = new URL("https://api-bdc.io/data/reverse-geocode-client");
@@ -53,7 +53,8 @@ export async function reverseGeocode(lat, lon) {
     const r = await fetch(u, { signal: AbortSignal.timeout(4000) });
     if (!r.ok) return null;
     const j = await r.json();
-    return j.city?.replace(/^Gemeente /, "") || j.locality || j.principalSubdivision || null;
+    const name = j.city?.replace(/^Gemeente /, "") || j.locality || j.principalSubdivision || null;
+    return name ? { name, country: j.countryName || null } : null;
   } catch { return null; }
 }
 
@@ -64,5 +65,5 @@ export async function searchPlaces(query) {
   const r = await fetch(u);
   if (!r.ok) throw new Error(`Geocoding: HTTP ${r.status}`);
   const j = await r.json();
-  return (j.results ?? []).map(p => ({ name: p.name, lat: p.latitude, lon: p.longitude, detail: [p.admin1, p.country].filter(Boolean).join(", ") }));
+  return (j.results ?? []).map(p => ({ name: p.name, country: p.country || null, lat: p.latitude, lon: p.longitude, detail: [p.admin1, p.country].filter(Boolean).join(", ") }));
 }

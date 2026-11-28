@@ -44,7 +44,7 @@ All rules and thresholds live in [`web/cycling-rules.json`](web/cycling-rules.js
 
 | Parameter | Example | Meaning |
 |---|---|---|
-| `lat`, `lon`, `name` | `index.html?lat=52.09&lon=5.12&name=Utrecht` | Show the weather for these coordinates (`name` is optional) instead of your current location. The "Other place" button searches a place (Open-Meteo geocoding) and sets these parameters, so you can share a link. Without them the browser location is used; if that is unavailable a place search is shown. |
+| `lat`, `lon`, `name`, `country` | `index.html?lat=52.09&lon=5.12&name=Utrecht&country=Netherlands` | Show the weather for these coordinates (`name` and `country` are optional and only shown next to the place name) instead of your current location. The "Other place" button searches a place (Open-Meteo geocoding) and sets these parameters, so you can share a link. Without them the browser location is used; if that is unavailable a place search is shown. |
 | `rules` | `index.html?rules=<url-to-json>` | Load your own rules file instead of `cycling-rules.json`. |
 
 Parameters can be combined, e.g. `index.html?lat=51.92&lon=4.48&rules=my-rules.json`. The page has a "How were these scores calculated?" section showing every rule's contribution. The advice is indicative only.
