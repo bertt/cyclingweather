@@ -290,7 +290,7 @@
       { "when": { "input": "dryCold", "op": "gte", "value": 1 }, "items": ["Lip balm"], "warning": "Dry, cold air: lip balm and a buff over your nose and mouth help." },
       { "when": { "input": "ta", "op": "lt", "value": -10 }, "items": ["Ski goggles"], "warning": "Extreme cold: ski goggles protect your eyes and face from the icy wind." },
       { "when": { "input": "sunGlare", "op": "gte", "value": 1 }, "warning": "Low sun: glare can hide obstacles." },
-      { "when": { "input": "redSky", "op": "gte", "value": 1 }, "warning": "Chance of a red sky around sunrise/sunset: cirrus scatters blue/violet away (Rayleigh scattering), leaving red/orange." },
+      { "when": { "input": "redSky", "op": "gte", "value": 1 }, "warning": "Chance of a red sky at {sunEvent}: cirrus scatters blue/violet away (Rayleigh scattering), leaving red/orange." },
       { "when": { "input": "mistLight", "op": "gte", "value": 1 }, "warning": "📷 Mist in the low sun: calm and damp, golden hazy light over the fields." },
       { "when": { "input": "rime", "op": "gte", "value": 1 }, "warning": "📷 Chance of rime/hoar frost: freezing, humid and calm. Beautiful, but watch for slippery spots." },
       { "when": { "input": "rainbow", "op": "gte", "value": 1 }, "warning": "📷 Chance of a rainbow: showers with the low sun behind you. Look away from the sun." },

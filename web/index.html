@@ -504,7 +504,9 @@ function derive(o, s, t, R) {
   const moonSoon = moonInfo(new Date(t.getTime() + 3 * 36e5), s.lat, s.lon);
   const fullMoon = (o.n == null || o.n <= (r.fullMoonMaxCloudOctas ?? 6)) && moon.illumination >= 95 &&
     (moon.altitude >= 0 || moonSoon.altitude >= 0) ? 1 : 0;
+  const rising = sunElevation(new Date(t.getTime() + 10 * 6e4), s.lat, s.lon) > elev;
   return {
+    sunEvent: rising ? "sunrise" : "sunset",
     fullMoon,
     ta: o.ta, td: o.td, rh: o.rh, ff: o.ff, gust: maxOf(o.gff, o.fx), qg: o.qg, vv: o.vv, n: o.n, ss: o.ss, pp: o.pp,
     spread, rainIntensity, rain1h: o.R1H, rain6h: o.R6H, rain24h: o.R24H,     rideTemp, feelsFormula: feelsLike(o.ta, o.ff, o.rh),
@@ -652,7 +654,7 @@ async function main() {
     const fullRule = quote ? allRules.find(q => q.rule === quote.rule) : null;
     const band = inp.rideTemp == null ? null : pick(R.clothing.bands, inp.rideTemp);
     const extras = new Set(), warnings = [];
-    for (const e of R.clothing.extras) if (test(e.when, inp)) { (e.items ?? []).forEach(i => extras.add(i)); if (e.warning) warnings.push(e.warning.replaceAll("{auroraProb}", inp.auroraProb ?? "").replaceAll("{meteorShower}", inp.meteorShower ?? "")); }
+    for (const e of R.clothing.extras) if (test(e.when, inp)) { (e.items ?? []).forEach(i => extras.add(i)); if (e.warning) warnings.push(e.warning.replaceAll("{auroraProb}", inp.auroraProb ?? "").replaceAll("{meteorShower}", inp.meteorShower ?? "").replaceAll("{sunEvent}", inp.sunEvent ?? "")); }
     const base = new Set(band?.items ?? []);
     const extraOnly = [...extras].filter(i => !base.has(i));
 
