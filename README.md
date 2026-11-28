@@ -1,6 +1,6 @@
 # Cycling weather
 
-🚴 **Live: <https://bertt.github.io/cyclingweather/>**
+🚴 **Live: <https://bertt.github.io/brisa/>**
 
 ![Screenshot of the cycling weather page](docs/screenshot.png)
 

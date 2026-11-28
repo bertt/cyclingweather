@@ -12,7 +12,7 @@
 </script>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Cycling weather · Open-Meteo</title>
+<title>Brisa · Cycling weather</title>
 <style>
   :root { --fg:#e8edf5; --mut:#8fa0b8; --acc:#4cc9f0; --bg1:#0e1420; --bg2:#0f3d3a; }
   * { box-sizing:border-box; }
@@ -286,7 +286,7 @@
 <body>
 <div class="wrap">
   <div class="testi" id="testi" hidden></div>  <dialog id="info">
-    <form method="dialog" class="ihead"><div><div class="ititle">🚴 Cycling weather</div><div class="isub">Should you ride today, and what should you wear? Advice based on the current weather.</div></div>
+    <form method="dialog" class="ihead"><div><div class="ititle">🚴 Brisa <span style="font-weight:400;opacity:.75">· Cycling weather</span></div><div class="isub">Should you ride today, and what should you wear? Advice based on the current weather.</div></div>
       <button class="iclose" aria-label="Close">✕</button></form>
     <div id="aboutmain">
     <div class="isec"><h4>👋 About this site</h4>
@@ -304,7 +304,7 @@
       <p>Your location stays in your browser, except that the weather request (Open-Meteo) and the place-name lookup (<a href="https://www.bigdatacloud.com/">BigDataCloud</a>) receive your coordinates.</p></div>
     </div>
     <div id="calcslot" hidden></div>
-    <div class="ifoot"><a href="https://github.com/bertt/cyclingweather">⭐ Source code on GitHub</a><div class="iauthor">Author © Bert Temme</div></div>
+    <div class="ifoot"><a href="https://github.com/bertt/brisa">⭐ Source code on GitHub</a><div class="iauthor">Author © Bert Temme</div></div>
   </dialog>
   <div class="card" id="card"><div class="loading"><div class="bike">🚴</div><div class="road"></div><div class="lt">Checking the weather…</div>
   <div class="steps"><div class="step run" id="s-loc"><span class="si">⏳</span> <span class="st">Determining your location</span></div>
@@ -320,7 +320,7 @@ const PARAMS = new URLSearchParams(location.search);
 const RULES_URL = PARAMS.get("rules") || "cycling-rules.json";
 const rulesLink = document.getElementById("rulesurl");
 rulesLink.href = RULES_URL; rulesLink.textContent = RULES_URL;
-const SHARE_URL = "https://bertt.github.io/cyclingweather/";
+const SHARE_URL = "https://bertt.github.io/brisa/";
 const LAT = parseFloat(PARAMS.get("lat")), LON = parseFloat(PARAMS.get("lon"));
 const HAS_PLACE = Number.isFinite(LAT) && Number.isFinite(LON) && Math.abs(LAT) <= 90 && Math.abs(LON) <= 180;
 
@@ -789,7 +789,7 @@ async function main() {
         </div>
       </div>
 
-      <div class="sharelink">🚴 ${SHARE_URL}<span class="when">      🕒 ${t.toLocaleString("en-GB", { dateStyle:"medium", timeStyle:"short" })} (local time)</span><small>Weather data by Open-Meteo.com (https://open-meteo.com/), CC BY 4.0 · © Bert Temme</small></div>
+      <div class="sharelink">🚴 Brisa · ${SHARE_URL}<span class="when">      🕒 ${t.toLocaleString("en-GB", { dateStyle:"medium", timeStyle:"short" })} (local time)</span><small>Weather data by Open-Meteo.com (https://open-meteo.com/), CC BY 4.0 · © Bert Temme</small></div>
             <div class="noshare" style="text-align:center"><button id="aboutbtn" type="button">ℹ️ About</button> <button id="share">📤 Share screenshot</button> <button id="sharepage" type="button">🔗 Share page</button>${user == null ? ` <button id="retry">Use my location</button>` : ""} <a class="btnlink" href="discussion.html">💬 Discussion</a> <a class="btnlink" href="https://buymeacoffee.com/berttemme" target="_blank" rel="noopener">☕ Buy me a coffee</a></div>
       <div class="foot noshare">${quote ? `<a href="https://www.velominati.com/the-rules/" target="_blank" rel="noopener">Rule #${quote.rule}</a> · “${esc(quote.text)}”${fullRule ? ` <button type="button" class="rulemore" id="rulemore">More</button>` : ""}<br>` : ""}Weather ${t.toLocaleString("en-GB", { dateStyle:"medium", timeStyle:"short" })} · <a href="https://open-meteo.com/" target="_blank" rel="noopener">Weather data by Open-Meteo.com</a> · © Bert Temme</div>`;
 
@@ -818,7 +818,7 @@ async function main() {
         const blob = await new Promise(r => canvas.toBlob(r, "image/png"));
         const file = new File([blob], `cycling-${s.name.replace(/\W+/g, "-").toLowerCase()}.png`, { type: "image/png" });
         const link = HAS_PLACE ? PLACE_URL(place.lat, place.lon, PARAMS.get("name")) : SHARE_URL;
-        const text = `Cycling weather${HAS_PLACE ? ` at ${place.name}` : ""}: ${link}`;
+        const text = `Brisa cycling weather${HAS_PLACE ? ` at ${place.name}` : ""}: ${link}`;
         if (navigator.canShare?.({ files: [file] })) await navigator.share({ files: [file], text });
         else {
           const a = document.createElement("a"); a.href = URL.createObjectURL(file); a.download = file.name; a.click();
@@ -834,7 +834,7 @@ async function main() {
       // Coordinates are rounded to about 1 km so sharing does not reveal an exact position
       const link = PLACE_URL(Math.round(place.lat * 100) / 100, Math.round(place.lon * 100) / 100, place.name);
       try {
-        if (navigator.share) await navigator.share({ title: `Cycling weather at ${place.name}`, url: link });
+        if (navigator.share) await navigator.share({ title: `Brisa cycling weather at ${place.name}`, url: link });
         else {
           await navigator.clipboard.writeText(link);
           btn.textContent = "✅ Link copied";
