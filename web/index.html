@@ -790,7 +790,7 @@ async function main() {
       </div>
 
       <div class="sharelink">🚴 ${SHARE_URL}<span class="when">      🕒 ${t.toLocaleString("en-GB", { dateStyle:"medium", timeStyle:"short" })} (local time)</span><small>Weather data by Open-Meteo.com (https://open-meteo.com/), CC BY 4.0 · © Bert Temme</small></div>
-            <div class="noshare" style="text-align:center"><button id="aboutbtn" type="button">ℹ️ About</button> <button id="share">📤 Share screenshot</button> <button id="place" type="button">📍 Other place</button>${user == null ? ` <button id="retry">Use my location</button>` : ""} <a class="btnlink" href="discussion.html">💬 Discussion</a> <a class="btnlink" href="https://buymeacoffee.com/berttemme" target="_blank" rel="noopener">☕ Buy me a coffee</a></div>
+            <div class="noshare" style="text-align:center"><button id="aboutbtn" type="button">ℹ️ About</button> <button id="share">📤 Share screenshot</button> <button id="sharepage" type="button">🔗 Share page</button> <button id="place" type="button">📍 Other place</button>${user == null ? ` <button id="retry">Use my location</button>` : ""} <a class="btnlink" href="discussion.html">💬 Discussion</a> <a class="btnlink" href="https://buymeacoffee.com/berttemme" target="_blank" rel="noopener">☕ Buy me a coffee</a></div>
       <div class="foot noshare">${quote ? `<a href="https://www.velominati.com/the-rules/" target="_blank" rel="noopener">Rule #${quote.rule}</a> · “${esc(quote.text)}”${fullRule ? ` <button type="button" class="rulemore" id="rulemore">More</button>` : ""}<br>` : ""}Weather ${t.toLocaleString("en-GB", { dateStyle:"medium", timeStyle:"short" })} · <a href="https://open-meteo.com/" target="_blank" rel="noopener">Weather data by Open-Meteo.com</a> · © Bert Temme</div>`;
 
     const calcDlg = document.getElementById("calcslot");
@@ -828,6 +828,21 @@ async function main() {
       } catch (err) {
         if (err.name !== "AbortError") alert(`Sharing failed: ${err.message}`);
       } finally { btn.disabled = false; btn.textContent = label; }
+    });
+    document.getElementById("sharepage").addEventListener("click", async e => {
+      const btn = e.currentTarget, label = btn.textContent;
+      // Coordinates are rounded to about 1 km so sharing does not reveal an exact position
+      const link = PLACE_URL(Math.round(place.lat * 100) / 100, Math.round(place.lon * 100) / 100, place.name);
+      try {
+        if (navigator.share) await navigator.share({ title: `Cycling weather at ${place.name}`, url: link });
+        else {
+          await navigator.clipboard.writeText(link);
+          btn.textContent = "✅ Link copied";
+          setTimeout(() => { btn.textContent = label; }, 2000);
+        }
+      } catch (err) {
+        if (err.name !== "AbortError") prompt("Copy this link:", link);
+      }
     });
     document.getElementById("retry")?.addEventListener("click", () => {
       const u = new URL(location.href); u.searchParams.delete("lat"); u.searchParams.delete("lon"); u.searchParams.delete("name"); location.href = u;
