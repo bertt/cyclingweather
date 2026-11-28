@@ -44,6 +44,7 @@
     "dullMaxWindMs": 2.5,
     "glareMaxElevationDeg": 12,
     "moonMaxCloudOctas": 2,
+    "auroraMinProbabilityPct": 5,
     "moonMinIlluminationPct": 50,
     "moonMinAltitudeDeg": 5
   },
@@ -298,6 +299,7 @@
       { "when": { "input": "stormLight", "op": "gte", "value": 1 }, "warning": "📷 Dramatic storm light, but lightning is dangerous: photograph from indoors." },
       { "when": { "input": "snowSun", "op": "gte", "value": 1 }, "warning": "📷 Snow in sunlight: sparkling scenery. Wear sunglasses against the glare." },
       { "when": { "input": "fullMoon", "op": "gte", "value": 1 }, "warning": "📷 Full moon tonight on a mostly clear sky: look for the moonrise." },
+      { "when": { "input": "aurora", "op": "gte", "value": 1 }, "warning": "📷 Chance of northern lights: {auroraProb}% according to the NOAA OVATION model. Dark, clear sky: look north away from city lights." },
       { "when": { "input": "starryNight", "op": "gte", "value": 1 }, "warning": "📷 Starry night: new moon, clear and dry air. Good for the stars and the Milky Way." },
       { "when": [{ "input": "qg", "op": "gte", "value": 600 }, { "input": "rideTemp", "op": "gte", "value": 18 }], "items": ["Sun sleeves or light jersey"] },
       { "when": [{ "input": "darkness", "op": "gt", "value": 0 }, { "input": "night", "op": "lt", "value": 1 }, { "input": "dawn", "op": "lt", "value": 1 }, { "input": "rideTemp", "op": "lt", "value": 12 }], "items": ["Extra layer in your pocket"], "warning": "It gets dark soon and cooler: take an extra layer in case you ride longer." },
