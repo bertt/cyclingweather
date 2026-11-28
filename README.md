@@ -34,7 +34,7 @@ The page shows 📷 warnings for photogenic moments (rules in `web/cycling-rules
 | `snowSun` | Snow in sunlight: snow (`ww` snow code, ≤ 2 °C), `n` ≤ 5, `elev` > 5°. |
 | `fullMoon` | Full moon: illumination ≥ 95%, `n` ≤ 6, moon up now or within 3 h. |
 | `starryNight` | Starry night: moon illumination ≤ 10%, `n` ≤ 1, `elev` < −18°, RH ≤ 85%. |
-| `aurora` | Chance of northern/southern lights: NOAA SWPC [OVATION](https://www.swpc.noaa.gov/products/aurora-30-minute-forecast) probability ≥ 5% (`auroraMinProbabilityPct`) for the 1° grid cell, `n` ≤ 2, `elev` < −12°, RH ≤ 90%. The model data (~900 kB, no key, cached 10 minutes) is only fetched when the sky is dark and clear at latitude ≥ 55°. The warning shows the probability. |
+| `aurora` | Chance of northern/southern lights: NOAA SWPC [OVATION](https://www.swpc.noaa.gov/products/aurora-30-minute-forecast) probability ≥ 5% (`auroraMinProbabilityPct`) for the 1° grid cell, `n` ≤ 2, `elev` < −12°, RH ≤ 90%. The model data (~900 kB, no key, cached 10 minutes) is only fetched when the sky is dark and clear at latitude ≥ 45°. The warning shows the probability. |
 
 ## Rules and URL parameters
 
@@ -49,7 +49,7 @@ Parameters can be combined, e.g. `index.html?lat=51.92&lon=4.48&rules=my-rules.j
 
 ## Data
 
-Weather data by [Open-Meteo.com](https://open-meteo.com/), licensed [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/), free for non-commercial use. The values are model data (best match), not station measurements. `web/openmeteo.js` fetches the current weather and the last 24 hourly values (10-minute `sessionStorage` cache). The weather code is the WMO subset Open-Meteo returns, so thunder is 95/96/99 and hail 96/99. Place names for your location come from [BigDataCloud](https://www.bigdatacloud.com/) reverse geocoding. The aurora probability comes from the [NOAA Space Weather Prediction Center](https://www.swpc.noaa.gov/) OVATION model (public domain, `web/aurora.js`), fetched only when the sky is dark and clear at latitude ≥ 55°.
+Weather data by [Open-Meteo.com](https://open-meteo.com/), licensed [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/), free for non-commercial use. The values are model data (best match), not station measurements. `web/openmeteo.js` fetches the current weather and the last 24 hourly values (10-minute `sessionStorage` cache). The weather code is the WMO subset Open-Meteo returns, so thunder is 95/96/99 and hail 96/99. Place names for your location come from [BigDataCloud](https://www.bigdatacloud.com/) reverse geocoding. The aurora probability comes from the [NOAA Space Weather Prediction Center](https://www.swpc.noaa.gov/) OVATION model (public domain, `web/aurora.js`), fetched only when the sky is dark and clear at latitude ≥ 45°.
 
 Cycling quotes come from [The Rules](https://www.velominati.com/the-rules/) by Velominati.
 

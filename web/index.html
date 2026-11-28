@@ -596,7 +596,7 @@ async function main() {
   ]);
   if (found) place.name = found;
   // Aurora model data is large: only fetch when the sky is dark and clear at high latitude
-  if (wx.o.n != null && wx.o.n <= 2 && Math.abs(place.lat) >= 55 && sunElevation(new Date(), place.lat, place.lon) < -12) {
+  if (wx.o.n != null && wx.o.n <= 2 && Math.abs(place.lat) >= 45 && sunElevation(new Date(), place.lat, place.lon) < -12) {
     wx.o.aurora = await loadAurora(place.lat, place.lon);
   }
   step("s-data", "ok", "Weather data loaded");
