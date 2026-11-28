@@ -579,17 +579,23 @@ function renderSearch(message) {
     <div style="text-align:center"><button type="button" id="usegps">Use my location</button></div>`;
   const places = document.getElementById("places");
   document.getElementById("usegps").onclick = () => { const u = new URL(location.href); u.search = ""; location.href = u; };
-  document.getElementById("searchform").addEventListener("submit", async e => {
-    e.preventDefault();
+  const q = document.getElementById("q");
+  let timer, seq = 0;
+  const runSearch = async () => {
+    const text = q.value.trim(), mine = ++seq;
+    if (text.length < 2) { places.textContent = ""; return; }
     places.textContent = "Searching…";
     try {
-      const found = await searchPlaces(document.getElementById("q").value.trim());
+      const found = await searchPlaces(text);
+      if (mine !== seq) return;
       places.innerHTML = found.length
         ? found.map(p => `<a href="${esc(PLACE_URL(p.lat, p.lon, p.name))}">${esc(p.name)} <small>${esc(p.detail)}</small></a>`).join("")
         : "No places found.";
-    } catch (err) { places.textContent = `Search failed: ${err.message}`; }
-  });
-  document.getElementById("q").focus();
+    } catch (err) { if (mine === seq) places.textContent = `Search failed: ${err.message}`; }
+  };
+  document.getElementById("searchform").addEventListener("submit", e => { e.preventDefault(); clearTimeout(timer); runSearch(); });
+  q.addEventListener("input", () => { clearTimeout(timer); timer = setTimeout(runSearch, 250); });
+  q.focus();
 }
 
 async function main() {
