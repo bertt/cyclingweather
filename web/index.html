@@ -297,6 +297,16 @@
       <p>The temperature data are grouped together at the top, with relative humidity (RH), the dew point (Td) and the dew point depression ΔT = air temperature − dew point, e.g. <code>94% | Td 3.8°C | ΔT 1.9°C</code>. ΔT is colour-coded: ≤ 2 °C red (very clammy, fog risk), 2–5 °C yellow (humid), 5–10 °C light green (moderate), &gt; 10 °C green (relatively dry). Humidity also drives fog warnings (RH ≥ 98% or ΔT ≤ 1 °C strong; RH ≥ 95% and ΔT ≤ 2 °C high; RH ≥ 90% with visibility &lt; 3 km misty), clothing advice (warm and humid: light clothing and extra drinking), bike cleaning advice (RH ≥ 95%: corrosion risk; RH ≤ 50% and no recent rain: light wipe) and tips (slippery roads, dry air).</p>
       <p>Cycling quotes come from <a href="https://www.velominati.com/the-rules/">The Rules</a> by Velominati.</p>
       <p><button type="button" id="calcbtn">🧮 How are the scores calculated?</button></p></div>
+    <div class="isec"><h4>🚴 How Brisa works</h4>
+      <p>Brisa (Spanish for "breeze") is a free cycling weather app. Open it and it shows the weather right now at your location, or at any place you search for, translated into advice for a ride:</p>
+      <ul>
+        <li><b>Ride score</b> (0–100) with a verdict, from "stay home" to "great ride weather".</li>
+        <li><b>What to wear</b>: clothing for the temperature on the bike (air temperature, wind chill, damp air and dusk), plus extras like gloves, sunglasses or a rain jacket.</li>
+        <li><b>Warnings</b> for ice, fog, thunder, hail, strong wind, heat and darkness.</li>
+        <li><b>Bike cleaning</b> advice after the ride, based on recent rain and humidity.</li>
+        <li><b>📷 Photo moments</b>: golden and blue hour, red sky, rainbow, rime, mist, full moon, moonbow, starry night, meteor showers and northern lights.</li>
+      </ul>
+      <p>Use <b>📍 Other place</b> to search a city (suggestions appear while you type), <b>🔗 Share page</b> to send a link to the current place, or <b>📤 Share screenshot</b> to share the card as an image. It needs no account and no app install.</p></div>
     <div class="isec"><h4>🌦️ Data</h4>
       <p>Weather data by <a href="https://open-meteo.com/">Open-Meteo.com</a> (<a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>, free for non-commercial use). The values come from weather models on a grid of a few kilometres, not from a weather station, so they can differ slightly from what you measure yourself. Places are looked up with the Open-Meteo geocoding API.</p></div>
 <div class="isec"><h4>🧮 Advice</h4>
@@ -724,7 +734,7 @@ async function main() {
 
     card.innerHTML = `
       <div class="head">
-        <div class="brand">🚴 Brisa</div>
+        <div class="brand">🚴 Brisa <span style="font-weight:500;letter-spacing:0;text-transform:none;color:var(--mut)">· cycling weather app</span></div>
         <div class="place">${esc(s.name)} <span style="font-size:.6em;font-weight:400;opacity:.7">· ${t.toLocaleString("en-GB", { day:"numeric", month:"short", year:"numeric", hour:"2-digit", minute:"2-digit" })}</span> <button id="place" type="button" class="noshare" style="margin:0 0 0 6px;padding:2px 10px;font-size:12px;font-weight:500;vertical-align:middle">📍 Other place</button></div>
         <div class="sub">${user ? "Your location · " : ""}${place.lat.toFixed(3)}, ${place.lon.toFixed(3)}</div>
       </div>
